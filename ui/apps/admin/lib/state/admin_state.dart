@@ -55,6 +55,16 @@ class AdminController extends StateNotifier<AdminState> {
     state = const AdminState();
   }
 
+  Future<void> refreshDeliveries() async {
+    if (!state.authenticated || state.snapshot == null) return;
+    try {
+      final snapshot = await _repository.load();
+      state = AdminState(authenticated: true, snapshot: snapshot);
+    } catch (_) {
+      // Retain existing snapshot if background telemetry poll experiences network blip
+    }
+  }
+
   Future<void> saveStore(AdminStore store) async {
     final data = state.snapshot!;
     final create = !data.stores.any((item) => item.id == store.id);

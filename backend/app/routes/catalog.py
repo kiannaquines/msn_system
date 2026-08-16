@@ -30,6 +30,21 @@ def list_addresses(user: User = Depends(require_roles("customer")), db: Session 
     return list(db.scalars(select(Address).where(Address.customer_id == user.id)).all())
 
 
+@router.delete("/customers/addresses/{address_id}", status_code=204, include_in_schema=False)
+@router.delete("/customers/me/addresses/{address_id}", status_code=204)
+def delete_address(
+    address_id: str,
+    user: User = Depends(require_roles("customer")),
+    db: Session = Depends(get_db),
+) -> Response:
+    address = db.scalar(select(Address).where(Address.id == address_id, Address.customer_id == user.id))
+    if not address:
+        raise HTTPException(status_code=404, detail="Address not found")
+    db.delete(address)
+    db.commit()
+    return Response(status_code=204)
+
+
 @router.get("/stores", response_model=list[StoreResponse])
 def list_stores(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[Store]:
     query = select(Store).order_by(Store.name)

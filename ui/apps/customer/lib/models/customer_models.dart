@@ -36,6 +36,7 @@ class Store {
     required this.categories,
     required this.rating,
     required this.etaMinutes,
+    this.imageUrl,
   });
   final String id;
   final String name;
@@ -43,6 +44,7 @@ class Store {
   final List<String> categories;
   final double rating;
   final int etaMinutes;
+  final String? imageUrl;
 }
 
 class MenuItem {
@@ -54,6 +56,7 @@ class MenuItem {
     required this.category,
     required this.price,
     this.available = true,
+    this.imageUrl,
   });
   final String id;
   final String storeId;
@@ -62,6 +65,7 @@ class MenuItem {
   final String category;
   final double price;
   final bool available;
+  final String? imageUrl;
 }
 
 class CartLine {

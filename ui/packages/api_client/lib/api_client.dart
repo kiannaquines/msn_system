@@ -94,6 +94,8 @@ class ApiClient {
         await _send('POST', '/api/v1/customers/me/addresses', body: {'label': label, 'line1': line1, 'latitude': latitude, 'longitude': longitude}) as Json,
       );
 
+  Future<void> deleteAddress(String addressId) => _send('DELETE', '/api/v1/customers/me/addresses/$addressId');
+
   Future<List<OrderSummary>> listOrders() async => ((await _send('GET', '/api/v1/orders')) as List).map((value) => OrderSummary.fromJson(value as Json)).toList();
 
   Future<OrderSummary> createOrder({required String storeId, required String addressId, required List<CartLine> lines, String? notes, required String idempotencyKey}) async => OrderSummary.fromJson(

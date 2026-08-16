@@ -8,6 +8,20 @@
 	<string>M&amp;S Rider requires background location to track active delivery routes even when the app is minimized.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>M&amp;S Rider requires background location to track active delivery routes even when the app is minimized.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>M&amp;S uses the local network to communicate with the local delivery server during development.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartobservatory._tcp</string>
+		<string>_dartvm._tcp</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>

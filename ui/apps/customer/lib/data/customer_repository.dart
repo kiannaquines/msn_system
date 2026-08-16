@@ -14,6 +14,7 @@ abstract interface class CustomerRepository {
   Future<List<MenuItem>> menu(String storeId);
   Future<List<DeliveryAddress>> addresses();
   Future<DeliveryAddress> createAddress(String label, String address, {double? latitude, double? longitude});
+  Future<void> deleteAddress(String addressId);
   Future<CustomerOrder> placeOrder({
     required Store store,
     required List<CartLine> lines,
@@ -80,6 +81,12 @@ class DemoCustomerRepository implements CustomerRepository {
     final created = DeliveryAddress(id: 'address-${_addresses.length + 1}', label: label, address: address, latitude: latitude, longitude: longitude);
     _addresses.add(created);
     return created;
+  }
+
+  @override
+  Future<void> deleteAddress(String addressId) async {
+    await _delay();
+    _addresses.removeWhere((a) => a.id == addressId);
   }
 
   @override
@@ -172,12 +179,29 @@ class ApiCustomerRepository implements CustomerRepository {
 
   @override
   Future<List<Store>> stores() async => (await _api.listStores())
-      .map((store) => Store(id: store.id, name: store.name, subtitle: store.description, categories: const ['Popular', 'Meals', 'Drinks'], rating: 4.8, etaMinutes: 30))
+      .map((store) => Store(
+            id: store.id,
+            name: store.name,
+            subtitle: store.description,
+            categories: const ['Popular', 'Meals', 'Drinks'],
+            rating: 4.8,
+            etaMinutes: 30,
+            imageUrl: store.imageUrl,
+          ))
       .toList();
 
   @override
   Future<List<MenuItem>> menu(String storeId) async => (await _api.listMenuItems(storeId))
-      .map((item) => MenuItem(id: item.id, storeId: item.storeId, name: item.name, description: item.description, category: 'Menu', price: item.price, available: item.available))
+      .map((item) => MenuItem(
+            id: item.id,
+            storeId: item.storeId,
+            name: item.name,
+            description: item.description,
+            category: 'Menu',
+            price: item.price,
+            available: item.available,
+            imageUrl: item.imageUrl,
+          ))
       .toList();
 
   @override
@@ -191,6 +215,9 @@ class ApiCustomerRepository implements CustomerRepository {
     final created = await _api.createAddress(label: label, line1: address, latitude: latitude, longitude: longitude);
     return DeliveryAddress(id: created.id, label: created.label, address: created.line1, latitude: created.latitude, longitude: created.longitude);
   }
+
+  @override
+  Future<void> deleteAddress(String addressId) => _api.deleteAddress(addressId);
 
   @override
   Future<CustomerOrder> placeOrder({required Store store, required List<CartLine> lines, required DeliveryAddress address}) async {

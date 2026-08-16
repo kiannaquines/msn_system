@@ -71,7 +71,52 @@ final sessionProvider = StateNotifierProvider<SessionController, SessionState>((
 
 final storesProvider = FutureProvider<List<Store>>((ref) => ref.watch(customerRepositoryProvider).stores());
 final menuProvider = FutureProvider.family<List<MenuItem>, String>((ref, id) => ref.watch(customerRepositoryProvider).menu(id));
-final addressesProvider = FutureProvider<List<DeliveryAddress>>((ref) => ref.watch(customerRepositoryProvider).addresses());
+class AddressesController extends StateNotifier<AsyncValue<List<DeliveryAddress>>> {
+  AddressesController(this._repository) : super(const AsyncValue.loading()) {
+    _load();
+  }
+  final CustomerRepository _repository;
+
+  Future<void> _load() async {
+    try {
+      final items = await _repository.addresses();
+      if (mounted) {
+        state = AsyncValue.data(items);
+      }
+    } catch (e, st) {
+      if (mounted) {
+        state = AsyncValue.error(e, st);
+      }
+    }
+  }
+
+  Future<void> load() async {
+    if (mounted) {
+      state = const AsyncValue.loading();
+    }
+    await _load();
+  }
+
+  Future<bool> deleteAddress(String id) async {
+    final current = state.value ?? [];
+    if (mounted) {
+      state = AsyncValue.data(current.where((a) => a.id != id).toList());
+    }
+    try {
+      await _repository.deleteAddress(id);
+      return true;
+    } catch (_) {
+      if (mounted) {
+        state = AsyncValue.data(current);
+      }
+      return false;
+    }
+  }
+}
+
+final addressesProvider = StateNotifierProvider<AddressesController, AsyncValue<List<DeliveryAddress>>>((ref) {
+  return AddressesController(ref.watch(customerRepositoryProvider));
+});
 
 class CartState {
   const CartState({this.store, this.lines = const []});

@@ -29,7 +29,7 @@ def now_offset(minutes: int = 0) -> datetime:
 
 
 def seed() -> None:
-    print("🇵🇭 Seeding authentic Filipino delivery data...")
+    print("📍 Seeding authentic Kabacan, Cotabato stores and delivery data...")
     db = SessionLocal()
     try:
         # Clear existing transactional order data for a fresh state
@@ -44,10 +44,25 @@ def seed() -> None:
         # =========================================================
         # 1. USERS & ACCOUNTS
         # =========================================================
-        # Admin
-        admin = db.scalar(select(User).where(User.email == "admin@mns.com"))
+        # Admin Accounts
+        admin = db.scalar(select(User).where(User.email == "admin@mns.ph"))
         if not admin:
             admin = User(
+                email="admin@mns.ph",
+                password_hash=hash_password("AdminPass123!"),
+                full_name="M&S System Administrator",
+                phone="+639178889999",
+                role="admin",
+                is_active=True,
+            )
+            db.add(admin)
+        else:
+            admin.full_name = "M&S System Administrator"
+            admin.password_hash = hash_password("AdminPass123!")
+
+        admin2 = db.scalar(select(User).where(User.email == "admin@mns.com"))
+        if not admin2:
+            admin2 = User(
                 email="admin@mns.com",
                 password_hash=hash_password("Password123!"),
                 full_name="Engr. Maria Corazon Aquino",
@@ -55,10 +70,10 @@ def seed() -> None:
                 role="admin",
                 is_active=True,
             )
-            db.add(admin)
+            db.add(admin2)
         else:
-            admin.full_name = "Engr. Maria Corazon Aquino"
-            admin.password_hash = hash_password("Password123!")
+            admin2.full_name = "Engr. Maria Corazon Aquino"
+            admin2.password_hash = hash_password("Password123!")
 
         # Riders
         rider1 = db.scalar(select(User).where(User.email == "rider@mns.com"))
@@ -149,10 +164,10 @@ def seed() -> None:
             db.add(cust3)
 
         db.flush()
-        print("  ✓ Users created (Admin, 3 Riders, 3 Customers)")
+        print("  ✓ Users active (Admin, 3 Riders, 3 Customers)")
 
         # =========================================================
-        # 2. CUSTOMER ADDRESSES
+        # 2. KABACAN SAVED CUSTOMER ADDRESSES
         # =========================================================
         db.query(Address).delete()
         addr_maria_home = Address(
@@ -164,131 +179,197 @@ def seed() -> None:
         )
         addr_maria_work = Address(
             customer_id=cust1.id,
-            label="Office (USM)",
-            line1="2F College of Arts & Sciences, USM Main Campus, Kabacan",
-            latitude=7.1125,
-            longitude=124.8350,
+            label="USM Main Campus",
+            line1="College of Arts and Sciences Bldg., USM Avenue, Kabacan",
+            latitude=7.1050,
+            longitude=124.8190,
         )
         addr_juan_home = Address(
             customer_id=cust2.id,
-            label="Bahay",
-            line1="Purok Rosal, National Highway, Brgy. Katidtuan, Kabacan",
-            latitude=7.1180,
-            longitude=124.8210,
+            label="Bahay (Bayugan)",
+            line1="Purok Rosal, Davao-Cotabato Highway, Brgy. Bayugan, Kabacan",
+            latitude=7.1130,
+            longitude=124.8290,
         )
         addr_bea_condo = Address(
             customer_id=cust3.id,
-            label="Apartment",
-            line1="Unit 304, Green Heights Residences, Agusan St., Poblacion, Kabacan",
-            latitude=7.1035,
-            longitude=124.8320,
+            label="Apartment (Mercado)",
+            line1="Door 3, Mercado Street, Poblacion, Kabacan, Cotabato",
+            latitude=7.1075,
+            longitude=124.8245,
         )
         db.add_all([addr_maria_home, addr_maria_work, addr_juan_home, addr_bea_condo])
         db.flush()
-        print("  ✓ Saved customer delivery addresses created")
+        print("  ✓ Kabacan customer delivery addresses created")
 
         # =========================================================
-        # 3. AUTHENTIC FILIPINO STORES & MENU ITEMS
+        # 3. KABACAN GOOGLE MAPS STORES & PRODUCTS
         # =========================================================
         db.query(MenuItem).delete()
         db.query(Store).delete()
 
-        # Store 1: Inasal & Ihaw-Ihaw
+        # Store 1: Penong's Barbecue Seafood & Grill Kabacan
         store1 = Store(
-            name="Manok ni San Pedro Inasal & Ihaw-Ihaw",
-            description="Bantog sa authentic Bacolod-style chicken inasal, juicy liempo, at unli-garlic rice.",
-            latitude=7.1080,
-            longitude=124.8310,
+            name="Penong's Barbecue Seafood & Grill",
+            description="Davao-Cotabato National Highway, Brgy. Bayugan, Kabacan. Famous for Chicken Inato with unlimited rice, juicy pork BBQ, and sizzling seafood.",
+            latitude=7.1125,
+            longitude=124.8285,
             is_active=True,
         )
         db.add(store1)
         db.flush()
 
         s1_items = [
-            MenuItem(store_id=store1.id, name="Paa Large Chicken Inasal w/ Garlic Rice & Atchara", description="Quarter leg marinated in calamansi, sinamak, and annatto oil.", category="Inasal Meals", price=185.00, is_available=True),
-            MenuItem(store_id=store1.id, name="Pecho Pak Inasal w/ Garlic Rice", description="Juicy breast and wing cut grilled over charcoal.", category="Inasal Meals", price=199.00, is_available=True),
-            MenuItem(store_id=store1.id, name="Inihaw na Pork Liempo (300g)", description="Tender pork belly basted with sweet-savory glaze.", category="Grilled Specialties", price=245.00, is_available=True),
-            MenuItem(store_id=store1.id, name="Sizzling Pork Sisig Special w/ Fresh Egg", description="Crispy pork mask & liver with chili and calamansi.", category="Popular", price=230.00, is_available=True),
-            MenuItem(store_id=store1.id, name="Extra Sinangag Garlic Butter Rice", description="Fried rice tossed in fragrant toasted garlic.", category="Sides", price=45.00, is_available=True),
-            MenuItem(store_id=store1.id, name="Samalamig Sago't Gulaman (16oz)", description="Classic brown sugar cooler with sago pearls and jelly.", category="Drinks", price=55.00, is_available=True),
+            MenuItem(store_id=store1.id, name="Chicken Inato Paa w/ Unlimited Rice", description="Quarter leg marinated in calamansi and annatto oil, grilled over charcoal.", category="Inato Meals", price=175.00, image_path="https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&q=80", is_available=True),
+            MenuItem(store_id=store1.id, name="Chicken Inato Pecho w/ Unlimited Rice", description="Juicy breast and wing cut with sweet-savory basting sauce.", category="Inato Meals", price=185.00, image_path="https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&q=80", is_available=True),
+            MenuItem(store_id=store1.id, name="Pork BBQ Skewers (3 Sticks)", description="Tender pork skewers with savory sweet glaze.", category="Grilled BBQ", price=145.00, image_path="https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=400&q=80", is_available=True),
+            MenuItem(store_id=store1.id, name="Crispy Pata Special (Family)", description="Deep fried pork knuckle with crunchy skin and tender meat.", category="Popular", price=480.00, image_path="https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80", is_available=True),
+            MenuItem(store_id=store1.id, name="Sizzling Bulalo Steak", description="Tender beef shank served on a sizzling hot plate with mushroom gravy.", category="Popular", price=320.00, image_path="https://images.unsplash.com/photo-1558030006-450675393462?w=400&q=80", is_available=True),
+            MenuItem(store_id=store1.id, name="Fresh Kinilaw na Tuna", description="Fresh raw tuna ceviche in vinegar, calamansi, ginger, and chili.", category="Seafood", price=210.00, image_path="https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400&q=80", is_available=True),
+            MenuItem(store_id=store1.id, name="House Calamansi Iced Tea (1L Pitcher)", description="Freshly squeezed calamansi cooler with honey.", category="Beverages", price=75.00, image_path="https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=400&q=80", is_available=True),
         ]
         db.add_all(s1_items)
 
-        # Store 2: Carinderia / Lutong Bahay
+        # Store 2: McMillan Kitchen & Catering
         store2 = Store(
-            name="Nanay Bebeng's Carinderia & Lutong Bahay",
-            description="Araw-araw sariwa at masasarap na ulam: Sinigang, Bulalo, Kare-Kare, at Lechon Kawali.",
-            latitude=7.1055,
-            longitude=124.8265,
+            name="McMillan Kitchen & Cafe",
+            description="Sunset Street, ABC Building (near USM Exit Gate), Poblacion, Kabacan. Cozy bistro offering creamy pasta, rice bowls, salpicao, and platters.",
+            latitude=7.1082,
+            longitude=124.8210,
             is_active=True,
         )
         db.add(store2)
         db.flush()
 
         s2_items = [
-            MenuItem(store_id=store2.id, name="Special Beef Bulalo Batangas", description="Rich beef shank bone marrow soup with sweet corn and pechay.", category="Sabaw Specialties", price=320.00, is_available=True),
-            MenuItem(store_id=store2.id, name="Sinigang na Baboy sa Gabi & Sampalok", description="Sour tamarind pork ribs stew with kangkong and radish.", category="Sabaw Specialties", price=220.00, is_available=True),
-            MenuItem(store_id=store2.id, name="Kare-Kareng Baka w/ Barrio Bagoong", description="Rich peanut sauce stew with tender beef, tripe, and eggplant.", category="Lutong Bahay", price=280.00, is_available=True),
-            MenuItem(store_id=store2.id, name="Crispy Pork Lechon Kawali (250g)", description="Deep-fried pork belly with Mang Tomas sauce.", category="Popular", price=250.00, is_available=True),
-            MenuItem(store_id=store2.id, name="Tortang Talong w/ Giniling na Baboy", description="Smoky grilled eggplant omelette stuffed with ground pork.", category="Gulay at Torta", price=130.00, is_available=True),
-            MenuItem(store_id=store2.id, name="Kanin (Steamed Pandan Rice)", description="Fragrant white rice.", category="Sides", price=30.00, is_available=True),
+            MenuItem(store_id=store2.id, name="Creamy Carbonara Platter", description="Rich bacon mushroom fettuccine with garlic bread slices.", category="Pasta & Platters", price=180.00, image_path="https://images.unsplash.com/photo-1612874742237-6526221588e3?w=400&q=80", is_available=True),
+            MenuItem(store_id=store2.id, name="Tender Beef Salpicao Rice Bowl", description="Pan-seared beef tenderloin cubes in garlic butter sauce with egg.", category="Rice Bowls", price=195.00, image_path="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80", is_available=True),
+            MenuItem(store_id=store2.id, name="Crispy Chicken Fillet w/ Gravy", description="Golden fried fillet served with sweet corn and seasoned rice.", category="Rice Bowls", price=145.00, image_path="https://images.unsplash.com/photo-1562967914-608f82629710?w=400&q=80", is_available=True),
+            MenuItem(store_id=store2.id, name="Sweet & Sour Fish Fillet Bowl", description="Crispy dory bites tossed in bell peppers and tangy sweet sauce.", category="Rice Bowls", price=160.00, image_path="https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&q=80", is_available=True),
+            MenuItem(store_id=store2.id, name="Triple Decker Club Sandwich w/ Fries", description="Ham, chicken, cheese, egg, lettuce with thick cut fries.", category="Snacks", price=135.00, image_path="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400&q=80", is_available=True),
+            MenuItem(store_id=store2.id, name="Blueberry Cheesecake Slice", description="Creamy New York style cheesecake topped with blueberry compote.", category="Desserts", price=120.00, image_path="https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=400&q=80", is_available=True),
         ]
         db.add_all(s2_items)
 
-        # Store 3: Kape & Kakanin
+        # Store 3: Bogs Bugoy Gastropub
         store3 = Store(
-            name="Kanto Kape & Kakanin Republic",
-            description="Artisan Batangas Barako coffee, Iced Spanish Latte, mainit na Bibingka, at Puto Bumbong.",
-            latitude=7.1038,
-            longitude=124.8335,
+            name="Bogs Bugoy Gastropub",
+            description="Mercado Street, Poblacion, Kabacan, Cotabato. Renowned for Korean Beef Bulgogi, Garlic Baked Scallops, and Sizzling Sisig.",
+            latitude=7.1070,
+            longitude=124.8250,
             is_active=True,
         )
         db.add(store3)
         db.flush()
 
         s3_items = [
-            MenuItem(store_id=store3.id, name="Iced Creamy Spanish Latte (16oz)", description="Fresh espresso with sweet milk blend over ice.", category="Kape", price=145.00, is_available=True),
-            MenuItem(store_id=store3.id, name="Hot Kapeng Barako Batangas (12oz)", description="Traditional dark roast drip coffee from Lipa, Batangas.", category="Kape", price=90.00, is_available=True),
-            MenuItem(store_id=store3.id, name="Special Bibingka w/ Salted Egg & Kesong Puti", description="Freshly baked rice cake topped with butter and grated coconut.", category="Kakanin", price=135.00, is_available=True),
-            MenuItem(store_id=store3.id, name="Puto Bumbong (2 pcs) w/ Niyog & Muscovado", description="Steamed purple rice treat topped with golden butter.", category="Kakanin", price=115.00, is_available=True),
-            MenuItem(store_id=store3.id, name="Leche Flan Special (1 Llanera)", description="Smooth caramel custard flan made from pure egg yolks.", category="Desserts", price=165.00, is_available=True),
+            MenuItem(store_id=store3.id, name="Signature Beef Bulgogi Plate", description="Thinly sliced marinated beef in sweet soy sesame sauce with sesame seeds.", category="Chef Specials", price=240.00, image_path="https://images.unsplash.com/photo-1553163147-622ab57be1c7?w=400&q=80", is_available=True),
+            MenuItem(store_id=store3.id, name="Garlic Butter Baked Scallops (8pcs)", description="Cheesy golden scallops baked with toasted garlic bits.", category="Seafood", price=260.00, image_path="https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=400&q=80", is_available=True),
+            MenuItem(store_id=store3.id, name="Crispy Garlic Fried Chicken (Half)", description="Double-fried chicken glazed with sweet garlic soy sauce.", category="Popular", price=220.00, image_path="https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&q=80", is_available=True),
+            MenuItem(store_id=store3.id, name="Sizzling Pork Sisig w/ Fresh Egg", description="Crispy pork mask with onions, chili peppers, and calamansi.", category="Popular", price=190.00, image_path="https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80", is_available=True),
+            MenuItem(store_id=store3.id, name="Cheesy Supreme Nachos Platter", description="Tortilla chips loaded with seasoned beef, jalapeños, and cheese drizzle.", category="Pulutan & Snacks", price=180.00, image_path="https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=400&q=80", is_available=True),
+            MenuItem(store_id=store3.id, name="Blue Lagoon Mocktail Cooler (16oz)", description="Refreshing citrus blue curacao cooler with mint.", category="Beverages", price=85.00, image_path="https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=400&q=80", is_available=True),
         ]
         db.add_all(s3_items)
 
-        # Store 4: Bakery & Merienda
+        # Store 4: Love BITE Restaurant
         store4 = Store(
-            name="Aling Nena's Panaderya & Merienda",
-            description="Bagong hango sa pugon na pandesal, ensaymada, merienda pancit, at lumpiang sariwa.",
-            latitude=7.1110,
-            longitude=124.8280,
+            name="Love BITE Restaurant",
+            description="LMD Building, Aglipay Street (in front of Aglipayan Church), Poblacion, Kabacan. Top-rated family dining for buttered chicken, seafood, and pancit.",
+            latitude=7.1095,
+            longitude=124.8240,
             is_active=True,
         )
         db.add(store4)
         db.flush()
 
         s4_items = [
-            MenuItem(store_id=store4.id, name="Pancit Canton Fiesta Bilao (Good for 2-3)", description="Stir-fried yellow noodles with pork, chicken liver, and crisp veggies.", category="Merienda", price=210.00, is_available=True),
-            MenuItem(store_id=store4.id, name="Fresh Lumpiang Ubod (2 pcs)", description="Heart of palm spring rolls with sweet peanut sauce.", category="Merienda", price=140.00, is_available=True),
-            MenuItem(store_id=store4.id, name="Ube Cheese Pandesal (Box of 6)", description="Soft purple yam bread with savory melted cheddar cheese filling.", category="Bakery", price=150.00, is_available=True),
-            MenuItem(store_id=store4.id, name="Special Queso de Bola Ensaymada", description="Brioche bun lathered in butter and grated Dutch cheese.", category="Bakery", price=85.00, is_available=True),
+            MenuItem(store_id=store4.id, name="Special Buttered Fried Chicken", description="Savory crispy chicken coated in aromatic melted butter glaze.", category="Popular", price=175.00, image_path="https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=400&q=80", is_available=True),
+            MenuItem(store_id=store4.id, name="Sweet & Spicy Buttered Shrimps", description="Fresh plump shrimps cooked in sweet chili garlic butter.", category="Seafood", price=240.00, image_path="https://images.unsplash.com/photo-1559737558-2453e1a0b168?w=400&q=80", is_available=True),
+            MenuItem(store_id=store4.id, name="Crispy Lechon Kawali Silog Meal", description="Golden deep-fried pork belly with garlic sinangag and fried egg.", category="Silog Meals", price=150.00, image_path="https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=400&q=80", is_available=True),
+            MenuItem(store_id=store4.id, name="Pancit Canton Guisado Fiesta Bilao", description="Stir-fried egg noodles with pork, liver, squid balls, and crisp vegetables.", category="Noodles", price=160.00, image_path="https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=400&q=80", is_available=True),
+            MenuItem(store_id=store4.id, name="Fresh Mixed Beef Chopsuey", description="Broccoli, cauliflower, bell peppers and beef in savory thick glaze.", category="Vegetables", price=150.00, image_path="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&q=80", is_available=True),
+            MenuItem(store_id=store4.id, name="Mango Graham Shake (16oz)", description="Fresh ripe mango shake layered with crushed honey graham and milk.", category="Beverages", price=75.00, image_path="https://images.unsplash.com/photo-1577805947697-89e18249d767?w=400&q=80", is_available=True),
         ]
         db.add_all(s4_items)
+
+        # Store 5: Kabacan Pastil King & Native Delicacies
+        store5 = Store(
+            name="Kabacan Pastil King & Native Delicacies",
+            description="USM Commercial Center, USM Avenue, Kabacan. Authentic Halal Maguindanaon chicken and beef kagikit pastil, fresh tinagtag, and native treats.",
+            latitude=7.1055,
+            longitude=124.8195,
+            is_active=True,
+        )
+        db.add(store5)
         db.flush()
-        print("  ✓ 4 Filipino Stores & 21 authentic menu items created")
+
+        s5_items = [
+            MenuItem(store_id=store5.id, name="Special Chicken Kagikit Pastil (2 Packs)", description="Steamed fragrant rice topped with shredded savory chicken kagikit wrapped in banana leaf.", category="Pastil Staples", price=40.00, image_path="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=400&q=80", is_available=True),
+            MenuItem(store_id=store5.id, name="Spicy Shredded Beef Pastil (2 Packs)", description="Tender flaked beef kagikit with native chili oil over steamed rice.", category="Pastil Staples", price=50.00, image_path="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&q=80", is_available=True),
+            MenuItem(store_id=store5.id, name="Tuna Flakes Native Pastil (2 Packs)", description="Flaked yellowfin tuna with toasted onion and garlic flakes.", category="Pastil Staples", price=45.00, image_path="https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400&q=80", is_available=True),
+            MenuItem(store_id=store5.id, name="Hard Boiled Egg (Pastil Pairing)", description="Perfect accompaniment to traditional Maguindanao pastil.", category="Add-ons", price=15.00, image_path="https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=400&q=80", is_available=True),
+            MenuItem(store_id=store5.id, name="Native Maguindanao Tinagtag Box", description="Crispy traditional fried rice flour delicacy with sugar syrup.", category="Native Delicacies", price=120.00, image_path="https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&q=80", is_available=True),
+            MenuItem(store_id=store5.id, name="Fresh Cold Buko Juice (500ml)", description="Pure coconut water with tender buko meat shreds.", category="Beverages", price=35.00, image_path="https://images.unsplash.com/photo-1543362906-acfc16c67564?w=400&q=80", is_available=True),
+        ]
+        db.add_all(s5_items)
+
+        # Store 6: Jollibee Kabacan Drive-Thru
+        store6 = Store(
+            name="Jollibee Kabacan Drive-Thru",
+            description="National Highway corner USM Avenue, Poblacion, Kabacan. Philippines' favourite crispy Chickenjoy, Jolly Spaghetti, and classic Yumburgers.",
+            latitude=7.1105,
+            longitude=124.8260,
+            is_active=True,
+        )
+        db.add(store6)
+        db.flush()
+
+        s6_items = [
+            MenuItem(store_id=store6.id, name="1-pc Chickenjoy w/ Steamed Rice", description="Signature crispylicious, juicylicious fried chicken with savory gravy.", category="Chickenjoy", price=95.00, image_path="https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=400&q=80", is_available=True),
+            MenuItem(store_id=store6.id, name="2-pc Chickenjoy w/ Rice & Drink", description="Two pieces crispy fried chicken with steamed rice and regular drink.", category="Chickenjoy", price=189.00, image_path="https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&q=80", is_available=True),
+            MenuItem(store_id=store6.id, name="Jolly Spaghetti w/ Yumburger Combo", description="Sweet-style spaghetti topped with grated cheese, hotdog slices, and beef burger.", category="Combos", price=135.00, image_path="https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400&q=80", is_available=True),
+            MenuItem(store_id=store6.id, name="Cheesy Classic Yumburger", description="100% pure beef patty with signature dressing and melted cheese.", category="Burgers", price=65.00, image_path="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80", is_available=True),
+            MenuItem(store_id=store6.id, name="1-pc Burger Steak w/ Rice & Mushroom Gravy", description="Beef patty simmered in mushroom gravy sauce over steamed rice.", category="Meals", price=70.00, image_path="https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&q=80", is_available=True),
+            MenuItem(store_id=store6.id, name="Peach Mango Pie (3-Pack Box)", description="Sweet mango and peach slices in a golden crispy golden crust.", category="Desserts", price=145.00, image_path="https://images.unsplash.com/photo-1519915028121-7d3463d20b13?w=400&q=80", is_available=True),
+        ]
+        db.add_all(s6_items)
+
+        # Store 7: Don Macchiatos & Cafe Kabacan
+        store7 = Store(
+            name="Don Macchiatos & Cafe",
+            description="USM Avenue, Brgy. Poblacion, Kabacan, Cotabato. Premium iced espresso coffee, Spanish lattes, matcha frappes, and freshly baked waffles.",
+            latitude=7.1068,
+            longitude=124.8215,
+            is_active=True,
+        )
+        db.add(store7)
+        db.flush()
+
+        s7_items = [
+            MenuItem(store_id=store7.id, name="Iced Caramel Macchiato (16oz)", description="Layered rich espresso with caramel drizzle and whole milk over ice.", category="Coffee Favorites", price=39.00, image_path="https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=400&q=80", is_available=True),
+            MenuItem(store_id=store7.id, name="Iced Spanish Latte (16oz)", description="Espresso paired with condensed milk blend for a velvety sweet kick.", category="Coffee Favorites", price=39.00, image_path="https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&q=80", is_available=True),
+            MenuItem(store_id=store7.id, name="Dark Chocolate Java Chip (16oz)", description="Rich chocolate espresso cooler with blended chocolate chip bits.", category="Coffee Favorites", price=39.00, image_path="https://images.unsplash.com/photo-1572490122747-3968b75cc699?w=400&q=80", is_available=True),
+            MenuItem(store_id=store7.id, name="Strawberry Matcha Iced Latte (16oz)", description="Layered Japanese Uji matcha, fresh milk, and strawberry puree.", category="Specialty Drinks", price=49.00, image_path="https://images.unsplash.com/photo-1536256263959-770b48d82b0a?w=400&q=80", is_available=True),
+            MenuItem(store_id=store7.id, name="Classic Golden Belgian Waffle", description="Freshly pressed crispy waffle with butter and maple syrup.", category="Waffles & Pastries", price=55.00, image_path="https://images.unsplash.com/photo-1562376552-0d160a2f238d?w=400&q=80", is_available=True),
+        ]
+        db.add_all(s7_items)
+        db.flush()
+        print("  ✓ 7 Kabacan Stores & 42 authentic menu items created")
 
         # =========================================================
-        # 4. ORDERS WITH VARIOUS REALISTIC STATUSES
+        # 4. KABACAN ORDERS WITH REALISTIC STATUSES & GPS TRACKS
         # =========================================================
-        # ORDER 1: Status = "pending" (Newly ordered by Maria, waiting for admin/store confirm)
+        # ORDER 1: Status = "pending" (Newly ordered by Maria from Penong's)
         o1 = Order(
             customer_id=cust1.id,
             store_id=store1.id,
             address_id=addr_maria_home.id,
             status="pending",
-            subtotal=645.00,
-            delivery_fee=55.00,
-            total=700.00,
-            route_distance_km=2.1,
+            subtotal=640.00,
+            delivery_fee=45.00,
+            total=685.00,
+            route_distance_km=1.8,
             payment_method="cash_on_delivery",
             payment_status="unpaid",
             rider_id=None,
@@ -297,21 +378,21 @@ def seed() -> None:
         db.add(o1)
         db.flush()
         db.add_all([
-            OrderItem(order_id=o1.id, menu_item_id=s1_items[0].id, name_snapshot=s1_items[0].name, unit_price=s1_items[0].price, quantity=2),
-            OrderItem(order_id=o1.id, menu_item_id=s1_items[3].id, name_snapshot=s1_items[3].name, unit_price=s1_items[3].price, quantity=1),
-            OrderItem(order_id=o1.id, menu_item_id=s1_items[4].id, name_snapshot=s1_items[4].name, unit_price=s1_items[4].price, quantity=1),
+            OrderItem(order_id=o1.id, menu_item_id=s1_items[0].id, name_snapshot=s1_items[0].name, unit_price=s1_items[0].price, quantity=2), # Chicken Inato Paa
+            OrderItem(order_id=o1.id, menu_item_id=s1_items[2].id, name_snapshot=s1_items[2].name, unit_price=s1_items[2].price, quantity=1), # Pork BBQ
+            OrderItem(order_id=o1.id, menu_item_id=s1_items[6].id, name_snapshot=s1_items[6].name, unit_price=s1_items[6].price, quantity=1), # Calamansi Tea
         ])
 
-        # ORDER 2: Status = "confirmed" (Store accepted, waiting for rider assignment)
+        # ORDER 2: Status = "confirmed" (McMillan Kitchen accepted, waiting for rider assignment)
         o2 = Order(
             customer_id=cust2.id,
             store_id=store2.id,
             address_id=addr_juan_home.id,
             status="confirmed",
-            subtotal=590.00,
-            delivery_fee=65.00,
-            total=655.00,
-            route_distance_km=3.4,
+            subtotal=520.00,
+            delivery_fee=50.00,
+            total=570.00,
+            route_distance_km=2.4,
             payment_method="cash_on_delivery",
             payment_status="unpaid",
             rider_id=None,
@@ -320,22 +401,22 @@ def seed() -> None:
         db.add(o2)
         db.flush()
         db.add_all([
-            OrderItem(order_id=o2.id, menu_item_id=s2_items[1].id, name_snapshot=s2_items[1].name, unit_price=s2_items[1].price, quantity=1), # Sinigang
-            OrderItem(order_id=o2.id, menu_item_id=s2_items[3].id, name_snapshot=s2_items[3].name, unit_price=s2_items[3].price, quantity=1), # Lechon Kawali
-            OrderItem(order_id=o2.id, menu_item_id=s2_items[5].id, name_snapshot=s2_items[5].name, unit_price=s2_items[5].price, quantity=4), # Rice
+            OrderItem(order_id=o2.id, menu_item_id=s2_items[0].id, name_snapshot=s2_items[0].name, unit_price=s2_items[0].price, quantity=1), # Carbonara
+            OrderItem(order_id=o2.id, menu_item_id=s2_items[1].id, name_snapshot=s2_items[1].name, unit_price=s2_items[1].price, quantity=1), # Beef Salpicao
+            OrderItem(order_id=o2.id, menu_item_id=s2_items[4].id, name_snapshot=s2_items[4].name, unit_price=s2_items[4].price, quantity=1), # Club Sandwich
         ])
         db.add(DeliveryEvent(order_id=o2.id, status="confirmed", actor_id=admin.id, created_at=now_offset(-20)))
 
-        # ORDER 3: Status = "assigned" (Rider Ben assigned, heading to store)
+        # ORDER 3: Status = "assigned" (Rider Ben assigned to Bogs Bugoy Gastropub)
         o3 = Order(
             customer_id=cust3.id,
             store_id=store3.id,
             address_id=addr_bea_condo.id,
             status="assigned",
-            subtotal=540.00,
-            delivery_fee=50.00,
-            total=590.00,
-            route_distance_km=1.5,
+            subtotal=690.00,
+            delivery_fee=40.00,
+            total=730.00,
+            route_distance_km=1.2,
             payment_method="cash_on_delivery",
             payment_status="unpaid",
             rider_id=rider2.id,
@@ -344,26 +425,26 @@ def seed() -> None:
         db.add(o3)
         db.flush()
         db.add_all([
-            OrderItem(order_id=o3.id, menu_item_id=s3_items[0].id, name_snapshot=s3_items[0].name, unit_price=s3_items[0].price, quantity=2), # Spanish Latte
-            OrderItem(order_id=o3.id, menu_item_id=s3_items[2].id, name_snapshot=s3_items[2].name, unit_price=s3_items[2].price, quantity=1), # Bibingka
-            OrderItem(order_id=o3.id, menu_item_id=s3_items[4].id, name_snapshot=s3_items[4].name, unit_price=s3_items[4].price, quantity=1), # Leche Flan
+            OrderItem(order_id=o3.id, menu_item_id=s3_items[0].id, name_snapshot=s3_items[0].name, unit_price=s3_items[0].price, quantity=1), # Beef Bulgogi
+            OrderItem(order_id=o3.id, menu_item_id=s3_items[1].id, name_snapshot=s3_items[1].name, unit_price=s3_items[1].price, quantity=1), # Baked Scallops
+            OrderItem(order_id=o3.id, menu_item_id=s3_items[3].id, name_snapshot=s3_items[3].name, unit_price=s3_items[3].price, quantity=1), # Pork Sisig
         ])
         db.add_all([
             DeliveryEvent(order_id=o3.id, status="confirmed", actor_id=admin.id, created_at=now_offset(-30)),
             DeliveryEvent(order_id=o3.id, status="assigned", actor_id=admin.id, created_at=now_offset(-15)),
-            AuditLog(actor_id=admin.id, action="order.assign", target_type="order", target_id=o3.id, reason="Nearest active rider in Poblacion area", created_at=now_offset(-15)),
+            AuditLog(actor_id=admin.id, action="order.assign", target_type="order", target_id=o3.id, reason="Nearest active rider in Poblacion Kabacan", created_at=now_offset(-15)),
         ])
 
-        # ORDER 4: Status = "picked_up" (Rider Caloy picked up from Aling Nena's Panaderya)
+        # ORDER 4: Status = "picked_up" (Rider Caloy picked up from Love BITE Restaurant)
         o4 = Order(
             customer_id=cust1.id,
             store_id=store4.id,
             address_id=addr_maria_work.id,
             status="picked_up",
-            subtotal=500.00,
-            delivery_fee=55.00,
-            total=555.00,
-            route_distance_km=2.2,
+            subtotal=485.00,
+            delivery_fee=45.00,
+            total=530.00,
+            route_distance_km=1.6,
             payment_method="cash_on_delivery",
             payment_status="unpaid",
             rider_id=rider3.id,
@@ -372,28 +453,28 @@ def seed() -> None:
         db.add(o4)
         db.flush()
         db.add_all([
-            OrderItem(order_id=o4.id, menu_item_id=s4_items[0].id, name_snapshot=s4_items[0].name, unit_price=s4_items[0].price, quantity=1), # Pancit Canton
-            OrderItem(order_id=o4.id, menu_item_id=s4_items[1].id, name_snapshot=s4_items[1].name, unit_price=s4_items[1].price, quantity=1), # Lumpiang Ubod
-            OrderItem(order_id=o4.id, menu_item_id=s4_items[2].id, name_snapshot=s4_items[2].name, unit_price=s4_items[2].price, quantity=1), # Ube Pandesal
+            OrderItem(order_id=o4.id, menu_item_id=s4_items[0].id, name_snapshot=s4_items[0].name, unit_price=s4_items[0].price, quantity=1), # Buttered Chicken
+            OrderItem(order_id=o4.id, menu_item_id=s4_items[2].id, name_snapshot=s4_items[2].name, unit_price=s4_items[2].price, quantity=1), # Lechon Kawali Silog
+            OrderItem(order_id=o4.id, menu_item_id=s4_items[3].id, name_snapshot=s4_items[3].name, unit_price=s4_items[3].price, quantity=1), # Pancit Canton
         ])
         db.add_all([
             DeliveryEvent(order_id=o4.id, status="confirmed", actor_id=admin.id, created_at=now_offset(-40)),
             DeliveryEvent(order_id=o4.id, status="assigned", actor_id=admin.id, created_at=now_offset(-32)),
             DeliveryEvent(order_id=o4.id, status="picked_up", actor_id=rider3.id, created_at=now_offset(-10)),
-            LocationPoint(order_id=o4.id, rider_id=rider3.id, latitude=7.1112, longitude=124.8282, accuracy_m=5.0, captured_at=now_offset(-9)),
-            LocationPoint(order_id=o4.id, rider_id=rider3.id, latitude=7.1118, longitude=124.8305, accuracy_m=4.2, captured_at=now_offset(-2)),
+            LocationPoint(order_id=o4.id, rider_id=rider3.id, latitude=7.1092, longitude=124.8235, accuracy_m=5.0, captured_at=now_offset(-9)),
+            LocationPoint(order_id=o4.id, rider_id=rider3.id, latitude=7.1075, longitude=124.8210, accuracy_m=4.2, captured_at=now_offset(-2)),
         ])
 
-        # ORDER 5: Status = "on_the_way" (Rider Jun en route to Maria Clara)
+        # ORDER 5: Status = "on_the_way" (Rider Jun en route from Pastil King to Maria Clara)
         o5 = Order(
             customer_id=cust1.id,
-            store_id=store1.id,
+            store_id=store5.id,
             address_id=addr_maria_home.id,
             status="on_the_way",
-            subtotal=544.00,
-            delivery_fee=55.00,
-            total=599.00,
-            route_distance_km=2.1,
+            subtotal=280.00,
+            delivery_fee=40.00,
+            total=320.00,
+            route_distance_km=1.5,
             payment_method="cash_on_delivery",
             payment_status="unpaid",
             rider_id=rider1.id,
@@ -402,29 +483,30 @@ def seed() -> None:
         db.add(o5)
         db.flush()
         db.add_all([
-            OrderItem(order_id=o5.id, menu_item_id=s1_items[1].id, name_snapshot=s1_items[1].name, unit_price=s1_items[1].price, quantity=2), # Pecho Pak
-            OrderItem(order_id=o5.id, menu_item_id=s1_items[4].id, name_snapshot=s1_items[4].name, unit_price=s1_items[4].price, quantity=2), # Sinangag
-            OrderItem(order_id=o5.id, menu_item_id=s1_items[5].id, name_snapshot=s1_items[5].name, unit_price=s1_items[5].price, quantity=1), # Sago't Gulaman
+            OrderItem(order_id=o5.id, menu_item_id=s5_items[0].id, name_snapshot=s5_items[0].name, unit_price=s5_items[0].price, quantity=2), # Chicken Pastil (4 packs)
+            OrderItem(order_id=o5.id, menu_item_id=s5_items[1].id, name_snapshot=s5_items[1].name, unit_price=s5_items[1].price, quantity=2), # Beef Pastil (4 packs)
+            OrderItem(order_id=o5.id, menu_item_id=s5_items[3].id, name_snapshot=s5_items[3].name, unit_price=s5_items[3].price, quantity=2), # Boiled Egg
+            OrderItem(order_id=o5.id, menu_item_id=s5_items[5].id, name_snapshot=s5_items[5].name, unit_price=s5_items[5].price, quantity=2), # Cold Buko Juice
         ])
         db.add_all([
             DeliveryEvent(order_id=o5.id, status="confirmed", actor_id=admin.id, created_at=now_offset(-28)),
             DeliveryEvent(order_id=o5.id, status="assigned", actor_id=admin.id, created_at=now_offset(-22)),
             DeliveryEvent(order_id=o5.id, status="picked_up", actor_id=rider1.id, created_at=now_offset(-12)),
             DeliveryEvent(order_id=o5.id, status="on_the_way", actor_id=rider1.id, created_at=now_offset(-6)),
-            LocationPoint(order_id=o5.id, rider_id=rider1.id, latitude=7.1075, longitude=124.8300, accuracy_m=4.0, captured_at=now_offset(-5)),
-            LocationPoint(order_id=o5.id, rider_id=rider1.id, latitude=7.1069, longitude=124.8295, accuracy_m=3.5, captured_at=now_offset(-1)),
+            LocationPoint(order_id=o5.id, rider_id=rider1.id, latitude=7.1060, longitude=124.8230, accuracy_m=4.0, captured_at=now_offset(-5)),
+            LocationPoint(order_id=o5.id, rider_id=rider1.id, latitude=7.1064, longitude=124.8270, accuracy_m=3.5, captured_at=now_offset(-1)),
         ])
 
-        # ORDER 6: Status = "delivered" (Delivered, COD ₱920 collected, Customer rated 5 stars)
+        # ORDER 6: Status = "delivered" (Delivered from Jollibee Kabacan, COD ₱564 paid, 5-star rating)
         o6 = Order(
             customer_id=cust1.id,
-            store_id=store2.id,
+            store_id=store6.id,
             address_id=addr_maria_home.id,
             status="delivered",
-            subtotal=860.00,
-            delivery_fee=60.00,
-            total=920.00,
-            route_distance_km=2.8,
+            subtotal=519.00,
+            delivery_fee=45.00,
+            total=564.00,
+            route_distance_km=1.9,
             payment_method="cash_on_delivery",
             payment_status="paid",
             rider_id=rider1.id,
@@ -433,9 +515,8 @@ def seed() -> None:
         db.add(o6)
         db.flush()
         db.add_all([
-            OrderItem(order_id=o6.id, menu_item_id=s2_items[0].id, name_snapshot=s2_items[0].name, unit_price=s2_items[0].price, quantity=1), # Bulalo
-            OrderItem(order_id=o6.id, menu_item_id=s2_items[2].id, name_snapshot=s2_items[2].name, unit_price=s2_items[2].price, quantity=1), # Kare-Kare
-            OrderItem(order_id=o6.id, menu_item_id=s2_items[4].id, name_snapshot=s2_items[4].name, unit_price=s2_items[4].price, quantity=2), # Tortang Talong
+            OrderItem(order_id=o6.id, menu_item_id=s6_items[1].id, name_snapshot=s6_items[1].name, unit_price=s6_items[1].price, quantity=2), # 2-pc Chickenjoy Meals
+            OrderItem(order_id=o6.id, menu_item_id=s6_items[5].id, name_snapshot=s6_items[5].name, unit_price=s6_items[5].price, quantity=1), # Peach Mango Pie Box
         ])
         db.add_all([
             DeliveryEvent(order_id=o6.id, status="confirmed", actor_id=admin.id, created_at=now_offset(-175)),
@@ -443,19 +524,19 @@ def seed() -> None:
             DeliveryEvent(order_id=o6.id, status="picked_up", actor_id=rider1.id, created_at=now_offset(-150)),
             DeliveryEvent(order_id=o6.id, status="on_the_way", actor_id=rider1.id, created_at=now_offset(-140)),
             DeliveryEvent(order_id=o6.id, status="delivered", actor_id=rider1.id, created_at=now_offset(-120)),
-            Feedback(order_id=o6.id, customer_id=cust1.id, rating=5, comment="Napakainit pa ng Bulalo at malinamnam ang Kare-Kare! Salamat Kuya Jun sa maingat na paghatid! ⭐⭐⭐⭐⭐", created_at=now_offset(-110)),
+            Feedback(order_id=o6.id, customer_id=cust1.id, rating=5, comment="Crispy at mainit pa ang Chickenjoy pagdating! Mabait si Kuya Jun rider. Salamat M&S! ⭐⭐⭐⭐⭐", created_at=now_offset(-110)),
         ])
 
-        # ORDER 7: Status = "cancelled" (Customer requested cancellation before prep)
+        # ORDER 7: Status = "cancelled" (Cancelled Don Macchiatos order)
         o7 = Order(
             customer_id=cust2.id,
-            store_id=store1.id,
+            store_id=store7.id,
             address_id=addr_juan_home.id,
             status="cancelled",
-            subtotal=245.00,
-            delivery_fee=55.00,
-            total=300.00,
-            route_distance_km=2.0,
+            subtotal=172.00,
+            delivery_fee=40.00,
+            total=212.00,
+            route_distance_km=2.2,
             payment_method="cash_on_delivery",
             payment_status="unpaid",
             rider_id=None,
@@ -464,24 +545,25 @@ def seed() -> None:
         db.add(o7)
         db.flush()
         db.add_all([
-            OrderItem(order_id=o7.id, menu_item_id=s1_items[2].id, name_snapshot=s1_items[2].name, unit_price=s1_items[2].price, quantity=1), # Liempo
+            OrderItem(order_id=o7.id, menu_item_id=s7_items[0].id, name_snapshot=s7_items[0].name, unit_price=s7_items[0].price, quantity=2), # Caramel Macchiato
+            OrderItem(order_id=o7.id, menu_item_id=s7_items[4].id, name_snapshot=s7_items[4].name, unit_price=s7_items[4].price, quantity=1), # Belgian Waffle
             DeliveryEvent(order_id=o7.id, status="cancelled", actor_id=admin.id, created_at=now_offset(-280)),
-            AuditLog(actor_id=admin.id, action="order.cancel", target_type="order", target_id=o7.id, reason="Customer called to cancel due to emergency change of plans", created_at=now_offset(-280)),
+            AuditLog(actor_id=admin.id, action="order.cancel", target_type="order", target_id=o7.id, reason="Customer called to cancel due to class schedule change at USM", created_at=now_offset(-280)),
         ])
 
         db.commit()
-        print("  ✓ 7 Orders created spanning all lifecycle stages:")
-        print("     1. 'pending'     (Waiting for admin confirmation)")
-        print("     2. 'confirmed'   (Store accepted, waiting for rider assignment)")
-        print("     3. 'assigned'    (Rider Ben assigned)")
-        print("     4. 'picked_up'   (Rider Caloy picked up, with live GPS points)")
-        print("     5. 'on_the_way'  (Rider Jun en route, with live GPS points)")
-        print("     6. 'delivered'   (Delivered, COD ₱920 paid, 5-star feedback)")
-        print("     7. 'cancelled'   (Cancelled with recorded audit reason)")
+        print("  ✓ 7 Orders created across Kabacan lifecycle stages:")
+        print("     1. 'pending'     (Penong's Chicken Inato - Waiting for confirmation)")
+        print("     2. 'confirmed'   (McMillan Kitchen Pasta & Salpicao - Store accepted)")
+        print("     3. 'assigned'    (Bogs Bugoy Gastropub Bulgogi - Rider Ben assigned)")
+        print("     4. 'picked_up'   (Love BITE Buttered Chicken - Rider Caloy with live GPS)")
+        print("     5. 'on_the_way'  (Kabacan Pastil King - Rider Jun en route with live GPS)")
+        print("     6. 'delivered'   (Jollibee Kabacan - Delivered, COD ₱564 paid, 5-star rating)")
+        print("     7. 'cancelled'   (Don Macchiatos - Cancelled with audit reason)")
 
     finally:
         db.close()
-    print("\n✅ Realistic Filipino seed data generated successfully!")
+    print("\n✅ Kabacan, Cotabato stores, menus, and orders seeded successfully!")
 
 
 if __name__ == "__main__":

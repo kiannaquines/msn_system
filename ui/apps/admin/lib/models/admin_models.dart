@@ -26,6 +26,7 @@ class AdminMenuItem {
   final String category;
   final double price;
   final bool available;
+  AdminMenuItem copyWith({String? name, String? category, double? price, bool? available}) => AdminMenuItem(id: id, name: name ?? this.name, category: category ?? this.category, price: price ?? this.price, available: available ?? this.available);
 }
 
 class AdminOrder {

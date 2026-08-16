@@ -5,7 +5,7 @@ import 'package:mns_admin/main.dart';
 void main() {
   testWidgets('shows administrator login', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: AdminApp()));
-    expect(find.text('Operations portal'), findsOneWidget);
+    expect(find.text('ADMINISTRATOR ACCESS'), findsOneWidget);
     expect(find.text('Sign in'), findsOneWidget);
   });
 }

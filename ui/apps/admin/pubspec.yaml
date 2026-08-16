@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  google_fonts: ^6.2.1
   flutter_riverpod: ^2.6.1
   flutter_map: ^7.0.2
   intl: ^0.20.1
@@ -24,6 +25,7 @@ dependencies:
     path: ../../packages/auth_session
   mns_realtime_client:
     path: ../../packages/realtime_client
+  flutter_map_cancellable_tile_provider: ^3.0.2
 
 dev_dependencies:
   flutter_test:

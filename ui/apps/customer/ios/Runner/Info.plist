@@ -8,6 +8,20 @@
 	<string>M&amp;S uses your location to help you set your delivery address and calculate accurate delivery fees.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>M&amp;S uses your location to help you set your delivery address and calculate accurate delivery fees.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>M&amp;S uses the local network to communicate with the local delivery server during development.</string>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_dartobservatory._tcp</string>
+		<string>_dartvm._tcp</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
