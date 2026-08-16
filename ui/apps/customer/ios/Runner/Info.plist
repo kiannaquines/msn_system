@@ -2,6 +2,12 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>M&amp;S uses your location to help you set your delivery address and calculate accurate delivery fees.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>M&amp;S uses your location to help you set your delivery address and calculate accurate delivery fees.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>M&amp;S uses your location to help you set your delivery address and calculate accurate delivery fees.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

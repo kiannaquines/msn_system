@@ -15,7 +15,7 @@ abstract final class MnsTheme {
         appBarTheme: const AppBarTheme(backgroundColor: MnsColors.navy, foregroundColor: Colors.white, centerTitle: false),
         cardTheme: const CardThemeData(elevation: 0, margin: EdgeInsets.zero),
         inputDecorationTheme: InputDecorationTheme(filled: true, fillColor: Colors.white, border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none)),
-        filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(52), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)))),
+        filledButtonTheme: FilledButtonThemeData(style: FilledButton.styleFrom(minimumSize: const Size(0, 52), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)))),
       );
 }
 

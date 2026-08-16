@@ -16,7 +16,44 @@ class _Page extends StatelessWidget {
   final Widget child;
   final List<Widget> actions;
   @override
-  Widget build(BuildContext context) => SingleChildScrollView(padding: const EdgeInsets.all(24), child: Center(child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 1280), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Wrap(alignment: WrapAlignment.spaceBetween, runSpacing: 12, children: [Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(title, style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900)), const SizedBox(height: 4), Text(subtitle, style: const TextStyle(color: Colors.black54))]), Row(mainAxisSize: MainAxisSize.min, children: actions)]), const SizedBox(height: 24), child]))));
+  Widget build(BuildContext context) => SingleChildScrollView(
+        padding: const EdgeInsets.all(28),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1280),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(subtitle, style: const TextStyle(color: Colors.black54, fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                    if (actions.isNotEmpty) ...[
+                      const SizedBox(width: 16),
+                      Row(mainAxisSize: MainAxisSize.min, children: actions),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 24),
+                child,
+              ],
+            ),
+          ),
+        ),
+      );
 }
 
 class DashboardPage extends StatelessWidget {

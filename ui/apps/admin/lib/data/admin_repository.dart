@@ -84,7 +84,7 @@ class AdminRepositoryImpl implements AdminRepository {
       stores.add(AdminStore(id: store.id, name: store.name, description: store.description, items: menu.map((item) => AdminMenuItem(id: item.id, name: item.name, category: 'Menu', price: item.price, available: item.available)).toList()));
     }
     final orders = (results[1] as List<shared.OrderSummary>).map((order) => AdminOrder(id: order.id, customer: 'Customer', store: order.storeName, total: order.total, status: _status(order.status), createdAt: order.createdAt ?? DateTime.now(), codPaid: order.paymentStatus == shared.PaymentStatus.paid)).toList();
-    final riders = (results[2] as List<shared.Json>).map((json) => AdminRider(id: json['id'] as String, name: (json['name'] ?? json['full_name']) as String, phone: json['phone'] as String? ?? '', status: AdminRiderStatus.values.byName((json['status'] ?? json['rider_status'] ?? 'offline') as String), activeDelivery: json['active_delivery_id'] as String?)).toList();
+    final riders = (results[2] as List<shared.Json>).map((json) => AdminRider(id: json['id'] as String, name: (json['name'] ?? json['full_name']) as String, phone: json['phone'] as String? ?? '', status: _riderStatus((json['status'] ?? json['rider_status']) as String?), activeDelivery: json['active_delivery_id'] as String?)).toList();
     final riderNames = {for (final rider in riders) rider.id: rider.name};
     final deliveries = (results[3] as List<shared.Json>).map((json) => LiveDelivery(id: json['id'] as String, orderId: json['order_id'] as String, rider: json['rider_name'] as String? ?? riderNames[json['rider_id']] ?? 'Unassigned', customer: json['customer_name'] as String? ?? 'Customer', status: _status(shared.OrderStatus.fromApi(json['status'] as String)), updatedAt: DateTime.tryParse(json['last_location_at'] as String? ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0), latitude: (json['latitude'] as num?)?.toDouble() ?? 0, longitude: (json['longitude'] as num?)?.toDouble() ?? 0)).toList();
     final feedback = (results[4] as List<shared.Json>).map((json) => FeedbackEntry(orderId: json['order_id'] as String, customer: json['customer_name'] as String? ?? 'Customer', rating: json['rating'] as int, comment: json['comment'] as String? ?? '', createdAt: DateTime.parse(json['created_at'] as String))).toList();
@@ -159,6 +159,12 @@ class AdminRepositoryImpl implements AdminRepository {
         shared.OrderStatus.onTheWay => AdminOrderStatus.onTheWay,
         shared.OrderStatus.delivered => AdminOrderStatus.delivered,
         shared.OrderStatus.cancelled => AdminOrderStatus.cancelled,
+      };
+
+  AdminRiderStatus _riderStatus(String? value) => switch (value?.toLowerCase()) {
+        'available' => AdminRiderStatus.available,
+        'busy' || 'assigned' || 'delivering' => AdminRiderStatus.busy,
+        _ => AdminRiderStatus.offline,
       };
 
   AdminSnapshot _demo() {

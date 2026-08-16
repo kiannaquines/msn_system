@@ -16,6 +16,7 @@ app = FastAPI(title="M&S Delivery API", version="1.0.0", openapi_url="/api/opena
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$" if settings.app_env != "production" else None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

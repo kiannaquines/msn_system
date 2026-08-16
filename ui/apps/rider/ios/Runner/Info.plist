@@ -2,6 +2,16 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>M&amp;S Rider requires location access while on duty to share real-time delivery progress with customers and dispatch.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>M&amp;S Rider requires background location to track active delivery routes even when the app is minimized.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>M&amp;S Rider requires background location to track active delivery routes even when the app is minimized.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
