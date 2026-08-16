@@ -41,7 +41,95 @@ class CatalogPage extends ConsumerWidget {
   const CatalogPage({super.key, required this.data});
   final AdminSnapshot data;
   @override
-  Widget build(BuildContext context, WidgetRef ref) => _Page(title: 'Store catalog', subtitle: 'Manage stores, menu items, prices, and availability.', actions: [FilledButton.icon(onPressed: () => _editStore(context, ref), icon: const Icon(Icons.add), label: const Text('Add store'))], child: Wrap(spacing: 16, runSpacing: 16, children: data.stores.map((store) => SizedBox(width: 390, child: Card(child: Padding(padding: const EdgeInsets.all(18), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [Expanded(child: Text(store.name, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18))), Switch(value: store.available, onChanged: (value) async => ref.read(adminProvider.notifier).saveStore(store.copyWith(available: value)))]), Text(store.description, style: const TextStyle(color: Colors.black54)), const Divider(height: 28), ...store.items.map((item) => ListTile(contentPadding: EdgeInsets.zero, onTap: () => _editMenuItem(context, ref, store, item), title: Text(item.name), subtitle: Text(item.category), trailing: Row(mainAxisSize: MainAxisSize.min, children: [Text('₱${item.price.toStringAsFixed(0)}'), IconButton(onPressed: () async => ref.read(adminProvider.notifier).removeMenuItem(store.id, item), icon: const Icon(Icons.delete_outline), tooltip: 'Remove item')]))), const SizedBox(height: 8), Row(children: [Expanded(child: OutlinedButton.icon(onPressed: () => _editStore(context, ref, store), icon: const Icon(Icons.edit_outlined), label: const Text('Edit store'))), const SizedBox(width: 8), IconButton.filledTonal(onPressed: () => _removeStore(context, ref, store), icon: const Icon(Icons.delete_outline), tooltip: 'Remove store'), const SizedBox(width: 8), Expanded(child: FilledButton.tonalIcon(onPressed: () => _editMenuItem(context, ref, store), icon: const Icon(Icons.add), label: const Text('Menu item')))])])))).toList()));
+  Widget build(BuildContext context, WidgetRef ref) => _Page(
+        title: 'Store catalog',
+        subtitle: 'Manage stores, menu items, prices, and availability.',
+        actions: [
+          FilledButton.icon(
+            onPressed: () => _editStore(context, ref),
+            icon: const Icon(Icons.add),
+            label: const Text('Add store'),
+          ),
+        ],
+        child: Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: data.stores.map((store) => SizedBox(
+            width: 390,
+            child: Card(
+              child: Padding(
+                padding: const EdgeInsets.all(18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            store.name,
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+                          ),
+                        ),
+                        Switch(
+                          value: store.available,
+                          onChanged: (value) async =>
+                              ref.read(adminProvider.notifier).saveStore(store.copyWith(available: value)),
+                        ),
+                      ],
+                    ),
+                    Text(store.description, style: const TextStyle(color: Colors.black54)),
+                    const Divider(height: 28),
+                    ...store.items.map((item) => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          onTap: () => _editMenuItem(context, ref, store, item),
+                          title: Text(item.name),
+                          subtitle: Text(item.category),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text('₱${item.price.toStringAsFixed(0)}'),
+                              IconButton(
+                                onPressed: () async =>
+                                    ref.read(adminProvider.notifier).removeMenuItem(store.id, item),
+                                icon: const Icon(Icons.delete_outline),
+                                tooltip: 'Remove item',
+                              ),
+                            ],
+                          ),
+                        )),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _editStore(context, ref, store),
+                            icon: const Icon(Icons.edit_outlined),
+                            label: const Text('Edit store'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton.filledTonal(
+                          onPressed: () => _removeStore(context, ref, store),
+                          icon: const Icon(Icons.delete_outline),
+                          tooltip: 'Remove store',
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            onPressed: () => _editMenuItem(context, ref, store),
+                            icon: const Icon(Icons.add),
+                            label: const Text('Menu item'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          )).toList(),
+        ),
+      );
 
   Future<void> _editStore(BuildContext context, WidgetRef ref, [AdminStore? current]) async {
     final name = TextEditingController(text: current?.name);

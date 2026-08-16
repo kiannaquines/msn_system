@@ -1,6 +1,7 @@
 name: mns_customer
 description: Customer mobile application for M&S Delivery System.
 publish_to: none
+resolution: workspace
 version: 1.0.0+1
 
 environment:

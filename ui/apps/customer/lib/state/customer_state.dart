@@ -21,7 +21,7 @@ class SessionState {
 }
 
 class SessionController extends StateNotifier<SessionState> {
-  SessionController(this._repository) : super(const SessionState(loading: true)) {
+  SessionController(this._repository) : super(const SessionState()) {
     _restore();
   }
   final CustomerRepository _repository;

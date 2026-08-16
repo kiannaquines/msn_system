@@ -67,7 +67,43 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           : ListView(padding: const EdgeInsets.all(20), children: [
               Text(cart.store!.name, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
               const SizedBox(height: 16),
-              Card(child: Column(children: cart.lines.map((line) => Column(children: [ListTile(contentPadding: const EdgeInsets.fromLTRB(16, 10, 10, 10), title: Text(line.item.name, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text('₱${line.item.price.toStringAsFixed(0)} each'), trailing: SizedBox(width: 116, child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [IconButton(onPressed: () => ref.read(cartProvider.notifier).setQuantity(line.item.id, line.quantity - 1), icon: const Icon(Icons.remove_circle_outline)), Text('${line.quantity}', style: const TextStyle(fontWeight: FontWeight.w700)), IconButton(onPressed: () => ref.read(cartProvider.notifier).setQuantity(line.item.id, line.quantity + 1), icon: const Icon(Icons.add_circle_outline))])), if (line != cart.lines.last) const Divider(height: 1)] )).toList())),
+              Card(
+                child: Column(
+                  children: cart.lines
+                      .map(
+                        (line) => Column(
+                          children: [
+                            ListTile(
+                              contentPadding: const EdgeInsets.fromLTRB(16, 10, 10, 10),
+                              title: Text(line.item.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                              subtitle: Text('₱${line.item.price.toStringAsFixed(0)} each'),
+                              trailing: SizedBox(
+                                width: 116,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: [
+                                    IconButton(
+                                      onPressed: () =>
+                                          ref.read(cartProvider.notifier).setQuantity(line.item.id, line.quantity - 1),
+                                      icon: const Icon(Icons.remove_circle_outline),
+                                    ),
+                                    Text('${line.quantity}', style: const TextStyle(fontWeight: FontWeight.w700)),
+                                    IconButton(
+                                      onPressed: () =>
+                                          ref.read(cartProvider.notifier).setQuantity(line.item.id, line.quantity + 1),
+                                      icon: const Icon(Icons.add_circle_outline),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            if (line != cart.lines.last) const Divider(height: 1),
+                          ],
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
               const SizedBox(height: 22),
               Text('Delivery address', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
               const SizedBox(height: 10),
@@ -88,10 +124,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 }
 
 class _AmountRow extends StatelessWidget {
-  const _AmountRow({required this.label, required this.value, this.emphasized = false});
+  const _AmountRow({required this.label, required this.value});
   final String label;
   final double value;
-  final bool emphasized;
   @override
-  Widget build(BuildContext context) => Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label, style: emphasized ? const TextStyle(fontWeight: FontWeight.w800, fontSize: 17) : null), Text('₱${value.toStringAsFixed(0)}', style: emphasized ? const TextStyle(fontWeight: FontWeight.w800, fontSize: 17) : null)]);
+  Widget build(BuildContext context) => Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(label), Text('₱${value.toStringAsFixed(0)}')]);
 }

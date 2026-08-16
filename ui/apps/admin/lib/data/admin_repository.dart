@@ -31,7 +31,8 @@ abstract interface class AdminRepository {
 
 class AdminRepositoryImpl implements AdminRepository {
   AdminRepositoryImpl({String? baseUrl, required this.demoMode}) : _api = demoMode ? null : ApiClient(baseUrl: baseUrl ?? '') {
-    if (_api != null) _session = AuthSession(_api!);
+    final api = _api;
+    if (api != null) _session = AuthSession(api);
   }
   final bool demoMode;
   final ApiClient? _api;

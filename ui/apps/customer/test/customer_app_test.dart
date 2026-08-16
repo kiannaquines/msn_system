@@ -5,6 +5,8 @@ import 'package:mns_customer/src/customer_app.dart';
 void main() {
   testWidgets('shows customer sign-in screen', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: CustomerApp()));
+    await tester.pump();
+    await tester.pump();
 
     expect(find.text('Welcome back'), findsOneWidget);
     expect(find.text('Sign in'), findsOneWidget);

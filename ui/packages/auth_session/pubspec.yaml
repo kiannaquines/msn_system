@@ -1,6 +1,7 @@
 name: mns_auth_session
 version: 0.1.0
 publish_to: none
+resolution: workspace
 environment:
   sdk: ^3.6.0
 dependencies:

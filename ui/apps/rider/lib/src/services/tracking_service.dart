@@ -61,11 +61,11 @@ class GeolocatorTrackingService implements TrackingService {
   Stream<TrackingReading> readings() {
     final LocationSettings settings;
     if (defaultTargetPlatform == TargetPlatform.android) {
-      settings = const AndroidSettings(
+      settings = AndroidSettings(
         accuracy: LocationAccuracy.high,
         distanceFilter: 10,
-        intervalDuration: Duration(seconds: 10),
-        foregroundNotificationConfig: ForegroundNotificationConfig(
+        intervalDuration: const Duration(seconds: 10),
+        foregroundNotificationConfig: const ForegroundNotificationConfig(
           notificationTitle: 'M&S delivery tracking',
           notificationText: 'Your location is shared for the active delivery.',
           enableWakeLock: true,
@@ -73,7 +73,7 @@ class GeolocatorTrackingService implements TrackingService {
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
-      settings = const AppleSettings(
+      settings = AppleSettings(
         accuracy: LocationAccuracy.high,
         activityType: ActivityType.automotiveNavigation,
         distanceFilter: 10,

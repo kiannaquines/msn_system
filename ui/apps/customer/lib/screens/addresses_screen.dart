@@ -22,6 +22,7 @@ class AddressesScreen extends ConsumerWidget {
                 itemCount: items.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (_, index) => Card(child: ListTile(contentPadding: const EdgeInsets.all(16), leading: const CircleAvatar(child: Icon(Icons.location_on_outlined)), title: Text(items[index].label, style: const TextStyle(fontWeight: FontWeight.w800)), subtitle: Text(items[index].address))),
+              ),
       ),
       floatingActionButton: FloatingActionButton.extended(onPressed: () => _add(context, ref), icon: const Icon(Icons.add), label: const Text('Add address')),
     );

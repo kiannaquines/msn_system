@@ -151,7 +151,25 @@ class _OrdersTab extends ConsumerWidget {
         const SizedBox(height: 6),
         const Text('Track active deliveries and view receipts.', style: TextStyle(color: Colors.black54)),
         const SizedBox(height: 24),
-        if (orders.isEmpty) const _EmptyOrders() else ...orders.map((order) => Padding(padding: const EdgeInsets.only(bottom: 14), child: Card(child: ListTile(contentPadding: const EdgeInsets.all(16), leading: CircleAvatar(child: Icon(order.stage.isComplete ? Icons.check : Icons.delivery_dining)), title: Text(order.store.name, style: const TextStyle(fontWeight: FontWeight.w700)), subtitle: Text('${order.stage.label} · ${DateFormat('MMM d, h:mm a').format(order.createdAt)}'), trailing: const Icon(Icons.chevron_right), onTap: () => context.push('/order', extra: order))))
+        if (orders.isEmpty)
+          const _EmptyOrders()
+        else
+          for (final order in orders)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: Card(
+                child: ListTile(
+                  contentPadding: const EdgeInsets.all(16),
+                  leading: CircleAvatar(
+                    child: Icon(order.stage.isComplete ? Icons.check : Icons.delivery_dining),
+                  ),
+                  title: Text(order.store.name, style: const TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text('${order.stage.label} · ${DateFormat('MMM d, h:mm a').format(order.createdAt)}'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/order', extra: order),
+                ),
+              ),
+            ),
       ],
     );
   }
