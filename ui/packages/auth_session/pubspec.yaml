@@ -1,0 +1,14 @@
+name: mns_auth_session
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: ^3.6.0
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^9.2.4
+  mns_api_client:
+    path: ../api_client
+  mns_domain_models:
+    path: ../domain_models
+

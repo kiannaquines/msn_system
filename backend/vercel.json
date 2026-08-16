@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["sin1"],
+  "functions": {
+    "api/**/*.py": {
+      "maxDuration": 30,
+      "excludeFiles": "{tests/**,alembic/**,**/__pycache__/**,**/*.pyc,*.db,.venv/**}"
+    }
+  },
+  "crons": [
+    { "path": "/api/v1/internal/outbox/process", "schedule": "*/10 * * * *" }
+  ]
+}

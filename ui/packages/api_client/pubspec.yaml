@@ -1,0 +1,10 @@
+name: mns_api_client
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: ^3.6.0
+dependencies:
+  http: ^1.3.0
+  mns_domain_models:
+    path: ../domain_models
+

@@ -1,0 +1,33 @@
+name: mns_admin
+description: Flutter Web operations dashboard for M&S Delivery System.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_riverpod: ^2.6.1
+  flutter_map: ^7.0.2
+  intl: ^0.20.1
+  latlong2: ^0.9.1
+  mns_api_client:
+    path: ../../packages/api_client
+  mns_domain_models:
+    path: ../../packages/domain_models
+  mns_design_system:
+    path: ../../packages/design_system
+  mns_auth_session:
+    path: ../../packages/auth_session
+  mns_realtime_client:
+    path: ../../packages/realtime_client
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

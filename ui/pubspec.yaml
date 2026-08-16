@@ -1,0 +1,14 @@
+name: mns_ui_workspace
+publish_to: none
+environment:
+  sdk: ^3.6.0
+workspace:
+  - apps/customer
+  - apps/rider
+  - apps/admin
+  - packages/api_client
+  - packages/domain_models
+  - packages/design_system
+  - packages/auth_session
+  - packages/realtime_client
+

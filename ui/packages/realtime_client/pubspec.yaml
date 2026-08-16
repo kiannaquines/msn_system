@@ -1,0 +1,8 @@
+name: mns_realtime_client
+version: 0.1.0
+publish_to: none
+environment:
+  sdk: ^3.6.0
+dependencies:
+  supabase_flutter: ^2.8.4
+

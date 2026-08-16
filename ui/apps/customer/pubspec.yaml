@@ -1,0 +1,37 @@
+name: mns_customer
+description: Customer mobile application for M&S Delivery System.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  go_router: ^14.6.2
+  geolocator: ^13.0.2
+  flutter_map: ^7.0.2
+  latlong2: ^0.9.1
+  intl: ^0.20.1
+  mns_api_client:
+    path: ../../packages/api_client
+  mns_domain_models:
+    path: ../../packages/domain_models
+  mns_design_system:
+    path: ../../packages/design_system
+  mns_auth_session:
+    path: ../../packages/auth_session
+  mns_realtime_client:
+    path: ../../packages/realtime_client
+  supabase_flutter: ^2.8.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
