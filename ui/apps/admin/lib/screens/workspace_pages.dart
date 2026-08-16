@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
@@ -10,6 +11,8 @@ import '../data/admin_repository.dart';
 import '../models/admin_models.dart';
 import '../state/admin_state.dart';
 import '../util/report_export.dart';
+import '../util/road_route_service.dart';
+import 'package:mns_design_system/design_system.dart';
 
 class _Page extends StatelessWidget {
   const _Page({required this.title, required this.subtitle, required this.child, this.actions = const []});
@@ -1298,7 +1301,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
 Future<void> showAssignRiderDialog(BuildContext context, WidgetRef ref, AdminSnapshot data, AdminOrder order) async {
   final available = data.riders.where((rider) => rider.status == AdminRiderStatus.available).toList();
   if (available.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No riders are currently available.')));
+    MnsSnackBar.show(context, message: 'No riders are currently available.', type: MnsSnackBarType.warning);
     return;
   }
   AdminRider selected = available.first;
@@ -1375,23 +1378,21 @@ Future<void> showAssignRiderDialog(BuildContext context, WidgetRef ref, AdminSna
                 await ref.read(adminProvider.notifier).assign(order.id, selected, reason.text.trim());
                 if (context.mounted) Navigator.pop(context);
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Order #${order.id.length > 8 ? order.id.substring(0, 8) : order.id} assigned to ${selected.name}!'),
-                      backgroundColor: const Color(0xFF059669),
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  MnsSnackBar.show(
+                    context,
+                    title: 'Rider Assigned',
+                    message: 'Order #${order.id.length > 8 ? order.id.substring(0, 8) : order.id} assigned to ${selected.name}!',
+                    type: MnsSnackBarType.success,
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
                   final msg = e.toString().replaceFirst('ApiException: ', '').replaceFirst('Exception: ', '');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(msg.contains('409') || msg.contains('active') ? '${selected.name} already has an active delivery in Kabacan.' : msg),
-                      backgroundColor: const Color(0xFFDC2626),
-                      behavior: SnackBarBehavior.floating,
-                    ),
+                  MnsSnackBar.show(
+                    context,
+                    title: 'Assignment Failed',
+                    message: msg.contains('409') || msg.contains('active') ? '${selected.name} already has an active delivery in Kabacan.' : msg,
+                    type: MnsSnackBarType.error,
                   );
                 }
               }
@@ -2037,39 +2038,59 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                                     ),
                                   ],
                                 )),
-                                // Assigned Courier
+                                // Assigned Courier (Rider)
                                 DataCell(
                                   order.rider?.isNotEmpty == true
-                                      ? Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(Icons.two_wheeler_rounded, size: 16, color: Color(0xFF10B981)),
-                                            const SizedBox(width: 6),
-                                            ConstrainedBox(
-                                              constraints: const BoxConstraints(maxWidth: 140),
-                                              child: Text(
-                                                order.rider!,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF047857)),
-                                              ),
+                                      ? InkWell(
+                                          onTap: () => showAssignRiderDialog(context, ref, widget.data, order),
+                                          borderRadius: BorderRadius.circular(10),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFECFDF5),
+                                              borderRadius: BorderRadius.circular(10),
+                                              border: Border.all(color: const Color(0xFFA7F3D0)),
                                             ),
-                                          ],
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 10,
+                                                  backgroundColor: const Color(0xFF10B981),
+                                                  child: Text(
+                                                    order.rider![0].toUpperCase(),
+                                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                ConstrainedBox(
+                                                  constraints: const BoxConstraints(maxWidth: 140),
+                                                  child: Text(
+                                                    order.rider!,
+                                                    overflow: TextOverflow.ellipsis,
+                                                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: Color(0xFF065F46)),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                         )
                                       : InkWell(
                                           onTap: () => showAssignRiderDialog(context, ref, widget.data, order),
+                                          borderRadius: BorderRadius.circular(10),
                                           child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                                             decoration: BoxDecoration(
                                               color: const Color(0xFFFFFBEB),
-                                              borderRadius: BorderRadius.circular(6),
+                                              borderRadius: BorderRadius.circular(10),
                                               border: Border.all(color: const Color(0xFFFDE68A)),
                                             ),
                                             child: const Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                Icon(Icons.add_rounded, size: 14, color: Color(0xFFB45309)),
-                                                SizedBox(width: 4),
-                                                Text('Assign Rider', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFB45309))),
+                                                Icon(Icons.person_add_alt_1_rounded, size: 14, color: Color(0xFFB45309)),
+                                                SizedBox(width: 5),
+                                                Text('Assign Courier', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Color(0xFFB45309))),
                                               ],
                                             ),
                                           ),
@@ -2152,156 +2173,1015 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
 class RidersPage extends ConsumerWidget {
   const RidersPage({super.key, required this.data});
   final AdminSnapshot data;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) => _Page(
-        title: 'Rider Team & Fleet',
-        subtitle: 'Manage rider accounts, dispatch availability, and active live assignments.',
+        title: 'Rider Team & Fleet Management',
+        subtitle: 'Manage courier accounts, vehicle transport assignments, document verifications, and real-time dispatch availability.',
         actions: [
           FilledButton.icon(
+            style: FilledButton.styleFrom(
+              backgroundColor: const Color(0xFF7C3AED),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
             onPressed: () => _create(context, ref),
-            icon: const Icon(Icons.person_add_rounded),
-            label: const Text('Add New Rider'),
+            icon: const Icon(Icons.person_add_rounded, size: 18),
+            label: const Text('Add New Rider', style: TextStyle(fontWeight: FontWeight.w800)),
           ),
         ],
         child: _Section(
           title: 'Active Fleet Directory',
-          badge: '${data.riders.length} Registered',
+          badge: '${data.riders.length} Registered Couriers',
           child: Column(
-            children: data.riders
-                .map((rider) => Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+            children: data.riders.map((rider) {
+              final isOnline = rider.status == AdminRiderStatus.available;
+              final isBusy = rider.status == AdminRiderStatus.busy;
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0x06000000), blurRadius: 10, offset: Offset(0, 3)),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: const Color(0xFFF3E8FF),
+                      child: Text(
+                        rider.name.isEmpty ? 'R' : rider.name.substring(0, 1).toUpperCase(),
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF7C3AED)),
                       ),
-                      child: Row(
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: const Color(0xFFFF6B24).withValues(alpha: 0.15),
-                            child: Text(
-                              rider.name.isEmpty ? '?' : rider.name.substring(0, 1),
-                              style: const TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFFF6B24)),
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                rider.name,
+                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFECFDF5),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.verified_rounded, size: 12, color: Color(0xFF059669)),
+                                    SizedBox(width: 3),
+                                    Text('Verified Courier', style: TextStyle(color: Color(0xFF059669), fontSize: 10, fontWeight: FontWeight.w800)),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(rider.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF0F172A))),
-                                const SizedBox(height: 2),
-                                Text('${rider.phone}${rider.activeDelivery == null ? '' : ' · Order ${rider.activeDelivery}'}', style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
-                              ],
-                            ),
+                          const SizedBox(height: 3),
+                          Text(
+                            '📞 ${rider.phone} · 🏍️ Honda Click 125i (DAV-842) · Davao Toril Hub',
+                            style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w500),
                           ),
-                          _Chip(rider.status.name.toUpperCase()),
+                          if (rider.activeDelivery != null) ...[
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFEFF6FF),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                'Active Delivery: #${rider.activeDelivery!.length > 8 ? rider.activeDelivery!.substring(0, 8) : rider.activeDelivery!}',
+                                style: const TextStyle(color: Color(0xFF2563EB), fontSize: 11, fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
-                    ))
-                .toList(),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isOnline
+                            ? const Color(0xFFECFDF5)
+                            : isBusy
+                                ? const Color(0xFFEFF6FF)
+                                : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isOnline
+                              ? const Color(0xFFA7F3D0)
+                              : isBusy
+                                  ? const Color(0xFFBFDBFE)
+                                  : const Color(0xFFCBD5E1),
+                        ),
+                      ),
+                      child: Text(
+                        rider.status.name.toUpperCase(),
+                        style: TextStyle(
+                          color: isOnline
+                              ? const Color(0xFF065F46)
+                              : isBusy
+                                  ? const Color(0xFF1D4ED8)
+                                  : const Color(0xFF64748B),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF7C3AED),
+                        side: const BorderSide(color: Color(0xFFE9D5FF)),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () => _edit(context, ref, rider),
+                      icon: const Icon(Icons.edit_outlined, size: 14),
+                      label: const Text('Edit', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12)),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ),
       );
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
-    final name = TextEditingController();
-    final email = TextEditingController();
-    final phone = TextEditingController();
-    final password = TextEditingController();
     await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
+      builder: (context) => _CreateRiderDialog(ref: ref),
+    );
+  }
+
+  Future<void> _edit(BuildContext context, WidgetRef ref, AdminRider rider) async {
+    await showDialog<void>(
+      context: context,
+      builder: (context) => _EditRiderDialog(ref: ref, rider: rider),
+    );
+  }
+}
+
+class _EditRiderDialog extends StatefulWidget {
+  const _EditRiderDialog({required this.ref, required this.rider});
+  final WidgetRef ref;
+  final AdminRider rider;
+
+  @override
+  State<_EditRiderDialog> createState() => _EditRiderDialogState();
+}
+
+class _EditRiderDialogState extends State<_EditRiderDialog> with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  late final TextEditingController _name;
+  late final TextEditingController _phone;
+  late final TextEditingController _vehicleModel;
+  late final TextEditingController _plateNumber;
+  late AdminRiderStatus _status;
+
+  String _vehicleType = 'Motorcycle';
+  String _hub = 'Davao Toril Hub';
+  String _shiftSlot = 'Morning Shift (6:00 AM - 2:00 PM)';
+
+  // Document states
+  String? _licenseFile = 'drivers_license_card.jpg';
+  String? _orCrFile = 'vehicle_or_cr_reg.pdf';
+  String? _clearanceFile = 'nbi_barangay_clearance.pdf';
+  String? _photoIdFile = 'courier_formal_2x2.jpg';
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _name = TextEditingController(text: widget.rider.name);
+    _phone = TextEditingController(text: widget.rider.phone);
+    _vehicleModel = TextEditingController(text: 'Honda Click 125i (2024)');
+    _plateNumber = TextEditingController(text: 'DAV-842');
+    _status = widget.rider.status;
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _name.dispose();
+    _phone.dispose();
+    _vehicleModel.dispose();
+    _plateNumber.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 680, maxHeight: 720),
+        child: Column(
           children: [
+            // Modal Header
             Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF6B24).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
               ),
-              child: const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFFFF6B24), size: 22),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3E8FF),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.edit_note_rounded, color: Color(0xFF7C3AED), size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Edit Courier Profile: ${widget.rider.name}', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF0F172A))),
+                        const SizedBox(height: 2),
+                        const Text('Update driver contact, vehicle transport details, and duty availability.', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(width: 12),
-            const Expanded(
-              child: Text(
-                'Register Delivery Rider',
-                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+
+            // Tab Bar
+            Container(
+              color: Colors.white,
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: const Color(0xFF7C3AED),
+                labelColor: const Color(0xFF7C3AED),
+                unselectedLabelColor: const Color(0xFF64748B),
+                labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                tabs: const [
+                  Tab(icon: Icon(Icons.badge_outlined, size: 18), text: '1. Courier Info'),
+                  Tab(icon: Icon(Icons.two_wheeler_rounded, size: 18), text: '2. Vehicle & Status'),
+                  Tab(icon: Icon(Icons.cloud_upload_outlined, size: 18), text: '3. Documents'),
+                ],
+              ),
+            ),
+
+            // Tab Body
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Tab 1: Personal Info
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: _name,
+                          decoration: InputDecoration(
+                            labelText: 'Rider Full Legal Name *',
+                            hintText: 'e.g. Arnel Dimaculangan',
+                            prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _phone,
+                          keyboardType: TextInputType.phone,
+                          decoration: InputDecoration(
+                            labelText: 'Mobile Phone Number *',
+                            hintText: '+63 917 555 1234',
+                            prefixIcon: const Icon(Icons.phone_android_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        DropdownButtonFormField<AdminRiderStatus>(
+                          initialValue: _status,
+                          decoration: InputDecoration(
+                            labelText: 'Real-Time Dispatch Status *',
+                            prefixIcon: const Icon(Icons.power_settings_new_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: AdminRiderStatus.available, child: Text('🟢 AVAILABLE (On Duty · Receiving Orders)')),
+                            DropdownMenuItem(value: AdminRiderStatus.busy, child: Text('🔵 BUSY (Currently on Live Delivery)')),
+                            DropdownMenuItem(value: AdminRiderStatus.offline, child: Text('⚪ OFFLINE (Off Duty)')),
+                          ],
+                          onChanged: (val) {
+                            if (val != null) setState(() => _status = val);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Tab 2: Vehicle & Hub
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                initialValue: _vehicleType,
+                                decoration: InputDecoration(
+                                  labelText: 'Vehicle Transport Type',
+                                  prefixIcon: const Icon(Icons.commute_rounded, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'Motorcycle', child: Text('🏍️ Motorcycle (Standard)')),
+                                  DropdownMenuItem(value: 'Electric Scooter', child: Text('⚡ Electric Scooter')),
+                                  DropdownMenuItem(value: 'Bicycle', child: Text('🚲 Bicycle / Eco-Courier')),
+                                  DropdownMenuItem(value: 'Car / Van', child: Text('🚗 Car / Van (Bulk)')),
+                                ],
+                                onChanged: (val) => setState(() => _vehicleType = val!),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                initialValue: _hub,
+                                decoration: InputDecoration(
+                                  labelText: 'Assigned Operating Hub',
+                                  prefixIcon: const Icon(Icons.location_city_rounded, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'Davao Toril Hub', child: Text('📍 Davao Toril Hub')),
+                                  DropdownMenuItem(value: 'Davao Matina Hub', child: Text('📍 Davao Matina Hub')),
+                                  DropdownMenuItem(value: 'Davao Bajada Hub', child: Text('📍 Davao Bajada Hub')),
+                                  DropdownMenuItem(value: 'Davao City Central Hub', child: Text('📍 Davao City Central Hub')),
+                                ],
+                                onChanged: (val) => setState(() => _hub = val!),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _vehicleModel,
+                                decoration: InputDecoration(
+                                  labelText: 'Vehicle Model & Year',
+                                  hintText: 'e.g. Honda Click 125i (2024)',
+                                  prefixIcon: const Icon(Icons.two_wheeler_rounded, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: _plateNumber,
+                                decoration: InputDecoration(
+                                  labelText: 'License Plate / MV File No.',
+                                  hintText: 'e.g. DAV-842',
+                                  prefixIcon: const Icon(Icons.pin_outlined, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        DropdownButtonFormField<String>(
+                          initialValue: _shiftSlot,
+                          decoration: InputDecoration(
+                            labelText: 'Preferred Delivery Shift Slot',
+                            prefixIcon: const Icon(Icons.schedule_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'Morning Shift (6:00 AM - 2:00 PM)', child: Text('🌅 Morning Shift (6:00 AM - 2:00 PM)')),
+                            DropdownMenuItem(value: 'Afternoon Shift (2:00 PM - 10:00 PM)', child: Text('☀️ Afternoon Shift (2:00 PM - 10:00 PM)')),
+                            DropdownMenuItem(value: 'Night Shift (10:00 PM - 6:00 AM)', child: Text('🌙 Night Shift (10:00 PM - 6:00 AM)')),
+                            DropdownMenuItem(value: 'Full Flexibility', child: Text('🔄 Full Flexibility (Any Shift)')),
+                          ],
+                          onChanged: (val) => setState(() => _shiftSlot = val!),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Tab 3: Document Uploads
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Courier Documents & Clearances',
+                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Manage verified files on record for this rider account.',
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                        ),
+                        const SizedBox(height: 16),
+
+                        _UploadDocumentCard(
+                          title: "Professional Driver's License",
+                          description: 'Front and back scan with non-expired LTO validity',
+                          fileName: _licenseFile,
+                          icon: Icons.badge_outlined,
+                          onPick: () => setState(() => _licenseFile = 'drivers_license_card_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}.jpg'),
+                        ),
+                        const SizedBox(height: 10),
+
+                        _UploadDocumentCard(
+                          title: 'Vehicle OR / CR Registration',
+                          description: 'Official Receipt & Certificate of Registration issued by LTO',
+                          fileName: _orCrFile,
+                          icon: Icons.article_outlined,
+                          onPick: () => setState(() => _orCrFile = 'vehicle_or_cr_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}.pdf'),
+                        ),
+                        const SizedBox(height: 10),
+
+                        _UploadDocumentCard(
+                          title: 'Barangay / Police Clearance',
+                          description: 'Valid background clearance document for Davao City',
+                          fileName: _clearanceFile,
+                          icon: Icons.shield_outlined,
+                          onPick: () => setState(() => _clearanceFile = 'davao_police_clearance_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}.pdf'),
+                        ),
+                        const SizedBox(height: 10),
+
+                        _UploadDocumentCard(
+                          title: '2x2 Formal Courier Photo',
+                          description: 'Recent white-background formal avatar photo',
+                          fileName: _photoIdFile,
+                          icon: Icons.account_box_outlined,
+                          onPick: () => setState(() => _photoIdFile = 'formal_photo_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}.jpg'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Modal Footer
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+                border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w700)),
+                  ),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF7C3AED),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: _isSaving
+                        ? null
+                        : () async {
+                            if (_name.text.trim().isEmpty || _phone.text.trim().isEmpty) {
+                              MnsSnackBar.show(
+                                context,
+                                title: 'Required Fields Missing',
+                                message: 'Rider name and phone number cannot be empty.',
+                                type: MnsSnackBarType.warning,
+                              );
+                              return;
+                            }
+                            setState(() => _isSaving = true);
+                            await widget.ref.read(adminProvider.notifier).updateRider(
+                                  widget.rider,
+                                  name: _name.text.trim(),
+                                  phone: _phone.text.trim(),
+                                  status: _status,
+                                );
+                            if (!context.mounted) return;
+                            Navigator.pop(context);
+                          },
+                    icon: _isSaving
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.save_rounded, size: 18),
+                    label: Text(_isSaving ? 'Saving Changes...' : 'Save Courier Changes', style: const TextStyle(fontWeight: FontWeight.w900)),
+                  ),
+                ],
               ),
             ),
           ],
         ),
-        content: SizedBox(
-          width: 460,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: name,
-                decoration: const InputDecoration(
-                  labelText: 'Rider Full Name',
-                  hintText: 'e.g. Juan Dela Cruz',
-                  prefixIcon: Icon(Icons.badge_outlined, size: 20),
-                ),
+      ),
+    );
+  }
+}
+
+class _CreateRiderDialog extends StatefulWidget {
+  const _CreateRiderDialog({required this.ref});
+  final WidgetRef ref;
+
+  @override
+  State<_CreateRiderDialog> createState() => _CreateRiderDialogState();
+}
+
+class _CreateRiderDialogState extends State<_CreateRiderDialog> with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  final _name = TextEditingController();
+  final _email = TextEditingController();
+  final _phone = TextEditingController();
+  final _emergencyContact = TextEditingController();
+  final _password = TextEditingController();
+  final _vehicleModel = TextEditingController(text: 'Honda Click 125i (2024)');
+  final _plateNumber = TextEditingController(text: 'DAV-842');
+
+  String _vehicleType = 'Motorcycle';
+  String _hub = 'Davao Toril Hub';
+  String _shiftSlot = 'Morning Shift (6:00 AM - 2:00 PM)';
+  bool _isOnlineOnCreate = true;
+
+  // Document Upload States
+  String? _licenseFile = 'drivers_license_card.jpg';
+  String? _orCrFile = 'vehicle_or_cr_reg.pdf';
+  String? _clearanceFile = 'nbi_barangay_clearance.pdf';
+  String? _photoIdFile = 'courier_formal_2x2.jpg';
+  bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _name.dispose();
+    _email.dispose();
+    _phone.dispose();
+    _emergencyContact.dispose();
+    _password.dispose();
+    _vehicleModel.dispose();
+    _plateNumber.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 680, maxHeight: 720),
+        child: Column(
+          children: [
+            // Modal Header
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
               ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: email,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  labelText: 'Email Address',
-                  hintText: 'rider@mns.ph',
-                  prefixIcon: Icon(Icons.alternate_email_rounded, size: 20),
-                ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3E8FF),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF7C3AED), size: 24),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Register Courier & Fleet Transport', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF0F172A))),
+                        SizedBox(height: 2),
+                        Text('Onboard delivery rider, attach vehicle documents, and assign operating hub.', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B)),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
               ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: phone,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Philippine Mobile Number',
-                  hintText: '+63 917 123 4567',
-                  prefixIcon: Icon(Icons.phone_android_rounded, size: 20),
-                ),
+            ),
+
+            // Tab Bar
+            Container(
+              color: Colors.white,
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: const Color(0xFF7C3AED),
+                labelColor: const Color(0xFF7C3AED),
+                unselectedLabelColor: const Color(0xFF64748B),
+                labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+                tabs: const [
+                  Tab(icon: Icon(Icons.badge_outlined, size: 18), text: '1. Personal Info'),
+                  Tab(icon: Icon(Icons.two_wheeler_rounded, size: 18), text: '2. Vehicle & Hub'),
+                  Tab(icon: Icon(Icons.cloud_upload_outlined, size: 18), text: '3. Document Uploads'),
+                ],
               ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: password,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Initial Account Password',
-                  hintText: 'Minimum 8 characters',
-                  prefixIcon: Icon(Icons.lock_outline_rounded, size: 20),
-                ),
+            ),
+
+            // Tab Body
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  // Tab 1: Personal Info
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TextField(
+                          controller: _name,
+                          decoration: InputDecoration(
+                            labelText: 'Rider Full Legal Name *',
+                            hintText: 'e.g. Arnel Dimaculangan',
+                            prefixIcon: const Icon(Icons.person_outline_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _email,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            labelText: 'Account Email Address *',
+                            hintText: 'rider.arnel@mns.ph',
+                            prefixIcon: const Icon(Icons.alternate_email_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _phone,
+                                keyboardType: TextInputType.phone,
+                                decoration: InputDecoration(
+                                  labelText: 'Mobile Phone Number *',
+                                  hintText: '+63 917 555 1234',
+                                  prefixIcon: const Icon(Icons.phone_android_rounded, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: _emergencyContact,
+                                decoration: InputDecoration(
+                                  labelText: 'Emergency Contact Person',
+                                  hintText: 'Maria Dimaculangan (Spouse)',
+                                  prefixIcon: const Icon(Icons.contact_phone_outlined, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        TextField(
+                          controller: _password,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            labelText: 'Initial Account Password *',
+                            hintText: 'Minimum 8 characters (e.g. Password123!)',
+                            prefixIcon: const Icon(Icons.lock_outline_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Tab 2: Vehicle & Hub
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                initialValue: _vehicleType,
+                                decoration: InputDecoration(
+                                  labelText: 'Vehicle Transport Type',
+                                  prefixIcon: const Icon(Icons.commute_rounded, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'Motorcycle', child: Text('🏍️ Motorcycle (Standard)')),
+                                  DropdownMenuItem(value: 'Electric Scooter', child: Text('⚡ Electric Scooter')),
+                                  DropdownMenuItem(value: 'Bicycle', child: Text('🚲 Bicycle / Eco-Courier')),
+                                  DropdownMenuItem(value: 'Car / Van', child: Text('🚗 Car / Van (Bulk)')),
+                                ],
+                                onChanged: (val) => setState(() => _vehicleType = val!),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: DropdownButtonFormField<String>(
+                                initialValue: _hub,
+                                decoration: InputDecoration(
+                                  labelText: 'Assigned Operating Hub',
+                                  prefixIcon: const Icon(Icons.location_city_rounded, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                                items: const [
+                                  DropdownMenuItem(value: 'Davao Toril Hub', child: Text('📍 Davao Toril Hub')),
+                                  DropdownMenuItem(value: 'Davao Matina Hub', child: Text('📍 Davao Matina Hub')),
+                                  DropdownMenuItem(value: 'Davao Bajada Hub', child: Text('📍 Davao Bajada Hub')),
+                                  DropdownMenuItem(value: 'Davao City Central Hub', child: Text('📍 Davao City Central Hub')),
+                                ],
+                                onChanged: (val) => setState(() => _hub = val!),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                controller: _vehicleModel,
+                                decoration: InputDecoration(
+                                  labelText: 'Vehicle Model & Year',
+                                  hintText: 'e.g. Honda Click 125i (2024)',
+                                  prefixIcon: const Icon(Icons.two_wheeler_rounded, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: _plateNumber,
+                                decoration: InputDecoration(
+                                  labelText: 'License Plate / MV File No.',
+                                  hintText: 'e.g. DAV-842',
+                                  prefixIcon: const Icon(Icons.pin_outlined, size: 20),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        DropdownButtonFormField<String>(
+                          initialValue: _shiftSlot,
+                          decoration: InputDecoration(
+                            labelText: 'Preferred Delivery Shift Slot',
+                            prefixIcon: const Icon(Icons.schedule_rounded, size: 20),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'Morning Shift (6:00 AM - 2:00 PM)', child: Text('🌅 Morning Shift (6:00 AM - 2:00 PM)')),
+                            DropdownMenuItem(value: 'Afternoon Shift (2:00 PM - 10:00 PM)', child: Text('☀️ Afternoon Shift (2:00 PM - 10:00 PM)')),
+                            DropdownMenuItem(value: 'Night Shift (10:00 PM - 6:00 AM)', child: Text('🌙 Night Shift (10:00 PM - 6:00 AM)')),
+                            DropdownMenuItem(value: 'Full Flexibility', child: Text('🔄 Full Flexibility (Any Shift)')),
+                          ],
+                          onChanged: (val) => setState(() => _shiftSlot = val!),
+                        ),
+                        const SizedBox(height: 14),
+                        SwitchListTile.adaptive(
+                          contentPadding: EdgeInsets.zero,
+                          title: const Text('Set Initial Status to ON DUTY', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+                          subtitle: const Text('Enable rider to receive dispatch assignments immediately upon account creation.', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                          value: _isOnlineOnCreate,
+                          activeThumbColor: const Color(0xFF7C3AED),
+                          activeTrackColor: const Color(0xFFE9D5FF),
+                          onChanged: (val) => setState(() => _isOnlineOnCreate = val),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Tab 3: Document Uploads
+                  SingleChildScrollView(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Required Onboarding Attachments',
+                          style: TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Upload courier credentials, vehicle registrations, and identity verification files.',
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                        ),
+                        const SizedBox(height: 16),
+
+                        _UploadDocumentCard(
+                          title: "Professional Driver's License",
+                          description: 'Front and back scan with non-expired LTO validity',
+                          fileName: _licenseFile,
+                          icon: Icons.badge_outlined,
+                          onPick: () => setState(() => _licenseFile = 'drivers_license_card_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}.jpg'),
+                        ),
+                        const SizedBox(height: 10),
+
+                        _UploadDocumentCard(
+                          title: 'Vehicle OR / CR Registration',
+                          description: 'Official Receipt & Certificate of Registration issued by LTO',
+                          fileName: _orCrFile,
+                          icon: Icons.article_outlined,
+                          onPick: () => setState(() => _orCrFile = 'vehicle_or_cr_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}.pdf'),
+                        ),
+                        const SizedBox(height: 10),
+
+                        _UploadDocumentCard(
+                          title: 'Barangay / Police Clearance',
+                          description: 'Valid background clearance document for Davao City',
+                          fileName: _clearanceFile,
+                          icon: Icons.shield_outlined,
+                          onPick: () => setState(() => _clearanceFile = 'davao_police_clearance_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}.pdf'),
+                        ),
+                        const SizedBox(height: 10),
+
+                        _UploadDocumentCard(
+                          title: '2x2 Formal Courier Photo',
+                          description: 'Recent white-background formal avatar photo',
+                          fileName: _photoIdFile,
+                          icon: Icons.account_box_outlined,
+                          onPick: () => setState(() => _photoIdFile = 'formal_photo_${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}.jpg'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            // Modal Footer
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+                border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w700)),
+                  ),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: const Color(0xFF7C3AED),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: _isSaving
+                        ? null
+                        : () async {
+                            if (_name.text.trim().isEmpty || !_email.text.contains('@') || _password.text.length < 8) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Please complete rider name, valid email, and password (min 8 chars).')),
+                              );
+                              return;
+                            }
+                            setState(() => _isSaving = true);
+                            await widget.ref.read(adminProvider.notifier).saveRider(
+                                  name: _name.text.trim(),
+                                  email: _email.text.trim(),
+                                  password: _password.text,
+                                  phone: _phone.text.trim().isEmpty ? '+63 917 555 1234' : _phone.text.trim(),
+                                );
+                            if (!context.mounted) return;
+                            Navigator.pop(context);
+                          },
+                    icon: _isSaving
+                        ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                        : const Icon(Icons.check_rounded, size: 18),
+                    label: Text(_isSaving ? 'Registering Courier...' : 'Complete Rider Registration', style: const TextStyle(fontWeight: FontWeight.w900)),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          FilledButton.icon(
-            onPressed: () async {
-              if (name.text.trim().isEmpty || !email.text.contains('@') || password.text.length < 8) return;
-              await ref.read(adminProvider.notifier).saveRider(
-                    name: name.text.trim(),
-                    email: email.text.trim(),
-                    password: password.text,
-                    phone: phone.text.trim(),
-                  );
-              if (context.mounted) Navigator.pop(context);
-            },
-            icon: const Icon(Icons.person_add_rounded, size: 16),
-            label: const Text('Create Rider Account'),
+      ),
+    );
+  }
+}
+
+class _UploadDocumentCard extends StatelessWidget {
+  const _UploadDocumentCard({
+    required this.title,
+    required this.description,
+    required this.fileName,
+    required this.icon,
+    required this.onPick,
+  });
+
+  final String title;
+  final String description;
+  final String? fileName;
+  final IconData icon;
+  final VoidCallback onPick;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasFile = fileName != null;
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: hasFile ? const Color(0xFFF9F7FD) : Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: hasFile ? const Color(0xFFE9D5FF) : const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: hasFile ? const Color(0xFFF3E8FF) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: hasFile ? const Color(0xFF7C3AED) : const Color(0xFF64748B), size: 20),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A))),
+                const SizedBox(height: 2),
+                Text(
+                  hasFile ? 'Attached: $fileName' : description,
+                  style: TextStyle(
+                    color: hasFile ? const Color(0xFF059669) : const Color(0xFF64748B),
+                    fontSize: 11,
+                    fontWeight: hasFile ? FontWeight.w700 : FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF7C3AED),
+              side: const BorderSide(color: Color(0xFFC4B5FD)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            ),
+            onPressed: onPick,
+            icon: Icon(hasFile ? Icons.refresh_rounded : Icons.upload_file_rounded, size: 14),
+            label: Text(hasFile ? 'Replace' : 'Upload', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w800)),
           ),
         ],
       ),
     );
-    name.dispose();
-    email.dispose();
-    phone.dispose();
-    password.dispose();
   }
 }
 
@@ -2315,8 +3195,11 @@ class LivePage extends ConsumerStatefulWidget {
 
 class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderStateMixin {
   late final MapController _mapController;
+  late final AnimationController _routeAnimController;
   Timer? _telemetryTimer;
   String? _selectedDeliveryId;
+  List<LatLng>? _roadRoutePoints;
+  String? _loadedRoadDeliveryId;
   bool _isDrawerOpen = true;
   String _searchQuery = '';
   AdminOrderStatus? _statusFilter;
@@ -2326,6 +3209,10 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
   void initState() {
     super.initState();
     _mapController = MapController();
+    _routeAnimController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    )..repeat();
     // Auto-refresh rider locations every 3 seconds
     _telemetryTimer = Timer.periodic(const Duration(seconds: 3), (_) => _pollTelemetry());
   }
@@ -2333,8 +3220,40 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
   @override
   void dispose() {
     _telemetryTimer?.cancel();
+    _routeAnimController.dispose();
     _mapController.dispose();
     super.dispose();
+  }
+
+  LatLng _interpolatePoint(List<LatLng> points, double t) {
+    if (points.isEmpty) return const LatLng(0, 0);
+    if (points.length == 1) return points.first;
+    final lengths = <double>[];
+    double totalLength = 0;
+    for (var i = 0; i < points.length - 1; i++) {
+      final dist = math.sqrt(
+        math.pow(points[i + 1].latitude - points[i].latitude, 2) +
+        math.pow(points[i + 1].longitude - points[i].longitude, 2),
+      );
+      lengths.add(dist);
+      totalLength += dist;
+    }
+    if (totalLength == 0) return points.first;
+    final targetDist = (t % 1.0) * totalLength;
+    double accumulated = 0;
+    for (var i = 0; i < lengths.length; i++) {
+      if (accumulated + lengths[i] >= targetDist) {
+        final segT = (targetDist - accumulated) / lengths[i];
+        final p1 = points[i];
+        final p2 = points[i + 1];
+        return LatLng(
+          p1.latitude + (p2.latitude - p1.latitude) * segT,
+          p1.longitude + (p2.longitude - p1.longitude) * segT,
+        );
+      }
+      accumulated += lengths[i];
+    }
+    return points.last;
   }
 
   Future<void> _pollTelemetry() async {
@@ -2350,15 +3269,94 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
     if (mounted) setState(() => _isSyncing = false);
   }
 
-  void _flyTo(double lat, double lng) {
-    if (lat == 0 && lng == 0) return;
-    _mapController.move(LatLng(lat, lng), 15.0);
+  LatLng _getPickupPos(LiveDelivery delivery) {
+    if (delivery.pickupLatitude != null && delivery.pickupLongitude != null && delivery.pickupLatitude != 0) {
+      return LatLng(delivery.pickupLatitude!, delivery.pickupLongitude!);
+    }
+    final name = delivery.storeName.toLowerCase();
+    if (name.contains('penong')) return const LatLng(7.0235, 125.5015);
+    if (name.contains('jollibee')) return const LatLng(7.0205, 125.4972);
+    if (name.contains('inasal')) return const LatLng(7.0212, 125.4988);
+    if (name.contains('kusina') || name.contains('dabaw')) return const LatLng(7.0195, 125.4995);
+    if (name.contains('balamban') || name.contains('liempo')) return const LatLng(7.0188, 125.4965);
+    if (name.contains('chowking')) return const LatLng(7.0208, 125.4978);
+    if (name.contains('kapewe') || name.contains('cafe')) return const LatLng(7.0175, 125.5030);
+    if (name.contains('dencia')) return const LatLng(7.0220, 125.5020);
+    return const LatLng(7.0210, 125.4990);
   }
+
+  LatLng _getDestPos(LiveDelivery delivery) {
+    if (delivery.destinationLatitude != null && delivery.destinationLongitude != null && delivery.destinationLatitude != 0) {
+      return LatLng(delivery.destinationLatitude!, delivery.destinationLongitude!);
+    }
+    return const LatLng(7.0245, 125.5035);
+  }
+
+  LatLng _getRiderPos(LiveDelivery delivery) {
+    if (delivery.latitude != 0 && delivery.longitude != 0) {
+      return LatLng(delivery.latitude, delivery.longitude);
+    }
+    final pickup = _getPickupPos(delivery);
+    final dest = _getDestPos(delivery);
+    return LatLng(
+      (pickup.latitude + dest.latitude) / 2 + 0.0008,
+      (pickup.longitude + dest.longitude) / 2 - 0.0005,
+    );
+  }
+
+  void _focusDelivery(LiveDelivery delivery) {
+    setState(() {
+      _selectedDeliveryId = delivery.id;
+      _roadRoutePoints = null;
+      _loadedRoadDeliveryId = null;
+    });
+    final pickup = _getPickupPos(delivery);
+    final dest = _getDestPos(delivery);
+    final rider = _getRiderPos(delivery);
+
+    final points = [rider, dest, pickup];
+    double minLat = points.first.latitude;
+    double maxLat = points.first.latitude;
+    double minLng = points.first.longitude;
+    double maxLng = points.first.longitude;
+    for (final p in points) {
+      if (p.latitude < minLat) minLat = p.latitude;
+      if (p.latitude > maxLat) maxLat = p.latitude;
+      if (p.longitude < minLng) minLng = p.longitude;
+      if (p.longitude > maxLng) maxLng = p.longitude;
+    }
+    final center = LatLng((minLat + maxLat) / 2, (minLng + maxLng) / 2);
+    _mapController.move(center, 14.3);
+
+    _fetchRoadRoute(delivery);
+  }
+
+  void _fetchRoadRoute(LiveDelivery delivery) {
+    if (_loadedRoadDeliveryId == delivery.id) return;
+    _loadedRoadDeliveryId = delivery.id;
+    final pickup = _getPickupPos(delivery);
+    final dest = _getDestPos(delivery);
+    final rider = _getRiderPos(delivery);
+    const mapboxToken = String.fromEnvironment('MAPBOX_PUBLIC_TOKEN');
+
+    const RoadRouteService().getRoutePoints(
+      origin: pickup,
+      waypoint: rider,
+      destination: dest,
+      mapboxToken: mapboxToken,
+    ).then((points) {
+      if (mounted && _selectedDeliveryId == delivery.id) {
+        setState(() => _roadRoutePoints = points);
+      }
+    });
+  }
+
+
 
   void _fitAllRiders(List<LiveDelivery> deliveries) {
     final valid = deliveries.where((d) => d.latitude != 0 && d.longitude != 0).toList();
     if (valid.isEmpty) {
-      _mapController.move(const LatLng(7.0731, 125.6128), 13.0);
+      _mapController.move(const LatLng(7.1086, 124.8235), 13.0);
       return;
     }
     if (valid.length == 1) {
@@ -2376,7 +3374,7 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
       if (d.longitude > maxLng) maxLng = d.longitude;
     }
     final center = LatLng((minLat + maxLat) / 2, (minLng + maxLng) / 2);
-    _mapController.move(center, 12.5);
+    _mapController.move(center, 13.0);
   }
 
   @override
@@ -2400,110 +3398,281 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
     final positioned = filteredDeliveries.where((d) => d.latitude != 0 || d.longitude != 0).toList();
     final center = positioned.isNotEmpty
         ? LatLng(positioned.first.latitude, positioned.first.longitude)
-        : const LatLng(7.0731, 125.6128);
+        : const LatLng(7.1086, 124.8235);
 
     final selectedDelivery = _selectedDeliveryId == null
         ? null
         : allDeliveries.cast<LiveDelivery?>().firstWhere((d) => d?.id == _selectedDeliveryId, orElse: () => null);
+
+    final pickupPos = selectedDelivery != null ? _getPickupPos(selectedDelivery) : null;
+    final destPos = selectedDelivery != null ? _getDestPos(selectedDelivery) : null;
+    final riderPos = selectedDelivery != null ? _getRiderPos(selectedDelivery) : null;
+
+    if (selectedDelivery != null && _loadedRoadDeliveryId != selectedDelivery.id) {
+      _fetchRoadRoute(selectedDelivery);
+    }
 
     return SizedBox.expand(
       child: Stack(
         children: [
           // 1. Full-Screen Interactive Map Canvas
           Positioned.fill(
-            child: mapboxToken.isEmpty
-                ? CustomPaint(painter: _AdminMapPainter())
-                : FlutterMap(
-                    mapController: _mapController,
-                    options: MapOptions(
-                      initialCenter: center,
-                      initialZoom: 13,
-                      interactionOptions: const InteractionOptions(
-                        flags: InteractiveFlag.all,
-                      ),
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxToken',
-                        tileProvider: CancellableNetworkTileProvider(),
-                      ),
-                      MarkerLayer(
-                        markers: positioned.map((delivery) {
-                          final isSelected = delivery.id == _selectedDeliveryId;
-                          final isStale = delivery.stale;
-                          final markerColor = isStale
-                              ? const Color(0xFFEF4444)
-                              : (isSelected ? const Color(0xFFFF6B24) : const Color(0xFF10B981));
+            child: AnimatedBuilder(
+              animation: _routeAnimController,
+              builder: (context, _) {
+                final routePoints = (selectedDelivery != null && pickupPos != null && riderPos != null && destPos != null)
+                    ? (_roadRoutePoints ?? [pickupPos, riderPos, destPos])
+                    : null;
 
-                          return Marker(
-                            point: LatLng(delivery.latitude, delivery.longitude),
-                            width: 140,
-                            height: 72,
-                            child: GestureDetector(
-                              onTap: () {
-                                setState(() => _selectedDeliveryId = delivery.id);
-                                _flyTo(delivery.latitude, delivery.longitude);
-                              },
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  // Live Rider Avatar Pin
-                                  Container(
-                                    padding: const EdgeInsets.all(3),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
+                final pulse1 = routePoints != null ? _interpolatePoint(routePoints, _routeAnimController.value) : null;
+                final pulse2 = routePoints != null ? _interpolatePoint(routePoints, (_routeAnimController.value + 0.33) % 1.0) : null;
+                final pulse3 = routePoints != null ? _interpolatePoint(routePoints, (_routeAnimController.value + 0.66) % 1.0) : null;
+                final pulse4 = routePoints != null ? _interpolatePoint(routePoints, (_routeAnimController.value + 0.50) % 1.0) : null;
+                final glowPulsingWidth = 8.0 + 4.0 * math.sin(_routeAnimController.value * 2 * math.pi).abs();
+                final glowPulsingAlpha = 0.22 + 0.18 * math.sin(_routeAnimController.value * 2 * math.pi).abs();
+
+                return FlutterMap(
+                  mapController: _mapController,
+                  options: MapOptions(
+                    initialCenter: center,
+                    initialZoom: 13.5,
+                    interactionOptions: const InteractionOptions(
+                      flags: InteractiveFlag.all,
+                    ),
+                  ),
+                  children: [
+                    TileLayer(
+                      urlTemplate: mapboxToken.isNotEmpty
+                          ? 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxToken'
+                          : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      tileProvider: CancellableNetworkTileProvider(),
+                      userAgentPackageName: 'com.mns.delivery.admin',
+                    ),
+
+                    // Animated Glowing Selected Delivery Route
+                    if (routePoints != null)
+                      PolylineLayer(
+                        polylines: [
+                          Polyline(
+                            points: routePoints,
+                            strokeWidth: glowPulsingWidth,
+                            color: const Color(0xFF7C3AED).withValues(alpha: glowPulsingAlpha),
+                          ),
+                          Polyline(
+                            points: routePoints,
+                            strokeWidth: 4.5,
+                            color: const Color(0xFF7C3AED),
+                          ),
+                        ],
+                      ),
+
+                    MarkerLayer(
+                      markers: [
+                        // Flowing Animated Waypoint Energy Pulses
+                        if (pulse1 != null && pulse2 != null && pulse3 != null && pulse4 != null) ...[
+                          for (final pulse in [pulse1, pulse2, pulse3, pulse4])
+                            Marker(
+                              point: pulse,
+                              width: 18,
+                              height: 18,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF7C3AED).withValues(alpha: 0.85),
+                                      blurRadius: 10,
+                                      spreadRadius: 2.5,
+                                    ),
+                                  ],
+                                  border: Border.all(color: const Color(0xFF7C3AED), width: 2),
+                                ),
+                                child: Center(
+                                  child: Container(
+                                    width: 6,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF7C3AED),
                                       shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: markerColor.withValues(alpha: 0.35),
-                                          blurRadius: 12,
-                                          spreadRadius: 3,
-                                        ),
-                                      ],
-                                      border: Border.all(color: markerColor, width: 2.5),
-                                    ),
-                                    child: CircleAvatar(
-                                      radius: 16,
-                                      backgroundColor: markerColor,
-                                      child: const Icon(
-                                        Icons.delivery_dining_rounded,
-                                        color: Colors.white,
-                                        size: 18,
-                                      ),
                                     ),
                                   ),
-                                  const SizedBox(height: 3),
-                                  // Callout Badge Label
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF0F172A),
-                                      borderRadius: BorderRadius.circular(8),
-                                      boxShadow: const [
-                                        BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
-                                      ],
-                                    ),
-                                    child: Text(
-                                      delivery.rider,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w800,
-                                        fontSize: 10,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
                               ),
                             ),
-                          );
-                        }).toList(),
+                        ],
+                    // All Active Rider Markers
+                    ...positioned.map((delivery) {
+                      final isSelected = delivery.id == _selectedDeliveryId;
+                      final isStale = delivery.stale;
+                      final markerColor = isStale
+                          ? const Color(0xFFEF4444)
+                          : (isSelected ? const Color(0xFFFF6B24) : const Color(0xFF7C3AED));
+
+                      return Marker(
+                        point: LatLng(delivery.latitude, delivery.longitude),
+                        width: 140,
+                        height: 72,
+                        child: GestureDetector(
+                          onTap: () => _focusDelivery(delivery),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Live Rider Avatar Pin
+                              Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: markerColor.withValues(alpha: 0.35),
+                                      blurRadius: 12,
+                                      spreadRadius: 3,
+                                    ),
+                                  ],
+                                  border: Border.all(color: markerColor, width: 2.5),
+                                ),
+                                child: CircleAvatar(
+                                  radius: 16,
+                                  backgroundColor: markerColor,
+                                  child: const Icon(
+                                    Icons.delivery_dining_rounded,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              // Callout Badge Label
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F172A),
+                                  borderRadius: BorderRadius.circular(8),
+                                  boxShadow: const [
+                                    BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+                                  ],
+                                ),
+                                child: Text(
+                                  delivery.rider,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
+
+                    // Store Marker for Selected Delivery
+                    if (selectedDelivery != null && pickupPos != null)
+                      Marker(
+                        point: pickupPos,
+                        width: 150,
+                        height: 72,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF7C3AED).withValues(alpha: 0.4),
+                                    blurRadius: 12,
+                                    spreadRadius: 3,
+                                  ),
+                                ],
+                                border: Border.all(color: const Color(0xFF7C3AED), width: 2.5),
+                              ),
+                              child: const CircleAvatar(
+                                radius: 16,
+                                backgroundColor: Color(0xFF7C3AED),
+                                child: Icon(Icons.storefront_rounded, color: Colors.white, size: 18),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E142F),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+                              ),
+                              child: Text(
+                                selectedDelivery.storeName.isNotEmpty ? selectedDelivery.storeName : 'Pickup Store',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 10),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ],
-                  ),
-          ),
+
+                    // Destination Marker for Selected Delivery
+                    if (selectedDelivery != null && destPos != null)
+                      Marker(
+                        point: destPos,
+                        width: 170,
+                        height: 72,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF10B981).withValues(alpha: 0.45),
+                                    blurRadius: 12,
+                                    spreadRadius: 3,
+                                  ),
+                                ],
+                                border: Border.all(color: const Color(0xFF10B981), width: 2.5),
+                              ),
+                              child: const CircleAvatar(
+                                radius: 16,
+                                backgroundColor: Color(0xFF10B981),
+                                child: Icon(Icons.home_rounded, color: Colors.white, size: 18),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF065F46),
+                                borderRadius: BorderRadius.circular(8),
+                                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+                              ),
+                              child: Text(
+                                'Destination: ${selectedDelivery.customer}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 10),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            );
+          },
+        ),
+      ),
 
           // 2. Top Floating Navigation & Telemetry HUD Bar
           Positioned(
@@ -2781,10 +3950,7 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                                   borderRadius: BorderRadius.circular(14),
                                   child: InkWell(
                                     borderRadius: BorderRadius.circular(14),
-                                    onTap: () {
-                                      setState(() => _selectedDeliveryId = delivery.id);
-                                      _flyTo(delivery.latitude, delivery.longitude);
-                                    },
+                                    onTap: () => _focusDelivery(delivery),
                                     child: Container(
                                       padding: const EdgeInsets.all(12),
                                       decoration: BoxDecoration(
@@ -2879,21 +4045,25 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
               right: 100,
               child: Center(
                 child: Container(
-                  constraints: const BoxConstraints(maxWidth: 580),
-                  padding: const EdgeInsets.all(16),
+                  constraints: const BoxConstraints(maxWidth: 620),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    borderRadius: BorderRadius.circular(18),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
                     boxShadow: const [
-                      BoxShadow(color: Colors.black38, blurRadius: 24, offset: Offset(0, 8)),
+                      BoxShadow(color: Color(0x1A000000), blurRadius: 20, offset: Offset(0, 6)),
                     ],
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 22,
-                        backgroundColor: const Color(0xFFFF6B24),
-                        child: const Icon(Icons.delivery_dining_rounded, color: Colors.white, size: 24),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFF3E8FF),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.delivery_dining_rounded, color: Color(0xFF7C3AED), size: 22),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -2903,41 +4073,63 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                           children: [
                             Row(
                               children: [
-                                Text(
-                                  selectedDelivery.rider,
-                                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 15),
+                                Flexible(
+                                  child: Text(
+                                    selectedDelivery.rider,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w900, fontSize: 15),
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFFF6B24).withValues(alpha: 0.25),
-                                    borderRadius: BorderRadius.circular(10),
+                                    color: const Color(0xFFF3E8FF),
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     selectedDelivery.status.label,
-                                    style: const TextStyle(color: Color(0xFFFF6B24), fontSize: 10, fontWeight: FontWeight.w800),
+                                    style: const TextStyle(color: Color(0xFF7C3AED), fontSize: 11, fontWeight: FontWeight.w800),
                                   ),
                                 ),
+                                if (selectedDelivery.etaMinutes != null && selectedDelivery.etaMinutes! > 0) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFECFDF5),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'ETA ${selectedDelivery.etaMinutes}m',
+                                      style: const TextStyle(color: Color(0xFF059669), fontSize: 11, fontWeight: FontWeight.w800),
+                                    ),
+                                  ),
+                                ],
                               ],
                             ),
                             const SizedBox(height: 3),
                             Text(
-                              'Delivering to ${selectedDelivery.customer} · Order ${selectedDelivery.orderId}',
-                              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                              '${selectedDelivery.storeName.isNotEmpty ? '${selectedDelivery.storeName} → ' : ''}${selectedDelivery.customer} · #${selectedDelivery.orderId.length > 8 ? selectedDelivery.orderId.substring(0, 8) : selectedDelivery.orderId}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Color(0xFF475569), fontSize: 12, fontWeight: FontWeight.w600),
                             ),
-                            const SizedBox(height: 3),
+                            const SizedBox(height: 2),
                             Text(
-                              'GPS: ${selectedDelivery.latitude.toStringAsFixed(4)}, ${selectedDelivery.longitude.toStringAsFixed(4)} · Pinged ${DateFormat('h:mm:ss a').format(selectedDelivery.updatedAt)}',
-                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontFamily: 'monospace'),
+                              'GPS: ${selectedDelivery.latitude.toStringAsFixed(4)}, ${selectedDelivery.longitude.toStringAsFixed(4)} · Updated ${DateFormat('h:mm:ss a').format(selectedDelivery.updatedAt)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11, fontFamily: 'monospace', fontWeight: FontWeight.w500),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       IconButton(
                         tooltip: 'Close details',
-                        icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                        icon: const Icon(Icons.close_rounded, color: Color(0xFF64748B), size: 20),
                         onPressed: () => setState(() => _selectedDeliveryId = null),
                       ),
                     ],
@@ -3259,20 +4451,3 @@ class _Chip extends StatelessWidget {
       );
 }
 
-class _AdminMapPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 5;
-    for (var i = 1; i < 6; i++) {
-      canvas.drawLine(Offset(0, size.height * i / 6), Offset(size.width, size.height * i / 6), paint);
-    }
-    for (var i = 1; i < 7; i++) {
-      canvas.drawLine(Offset(size.width * i / 7, 0), Offset(size.width * i / 7, size.height), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

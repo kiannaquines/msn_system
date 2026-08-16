@@ -102,7 +102,7 @@ def create_order(
 
     subtotal = sum((Decimal(str(menu[line.menu_item_id].price)) * line.quantity for line in payload.items), Decimal("0"))
     distance = route_distance_km((store.latitude, store.longitude), (address.latitude, address.longitude))
-    fee_config = db.get(DeliveryFeeConfig, 1) or DeliveryFeeConfig(id=1, base_fee=Decimal("50.00"), per_km_fee=Decimal("10.00"))
+    fee_config = db.get(DeliveryFeeConfig, 1) or DeliveryFeeConfig(id=1, base_fee=Decimal("40.00"), per_km_fee=Decimal("5.00"))
     db.add(fee_config)
     fee = (Decimal(str(fee_config.base_fee)) + Decimal(str(fee_config.per_km_fee)) * Decimal(str(distance))).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
     order = Order(
@@ -215,8 +215,6 @@ def list_deliveries(user: User = Depends(current_user), db: Session = Depends(ge
 def get_delivery(order_id: str, user: User = Depends(current_user), db: Session = Depends(get_db)) -> DeliveryResponse:
     order = load_order(db, order_id)
     assert_order_access(order, user)
-    if order.status not in {"assigned", "picked_up", "on_the_way", "delivered"}:
-        raise HTTPException(status_code=404, detail="Delivery not found")
     return delivery_response(db, order)
 
 

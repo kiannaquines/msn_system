@@ -63,62 +63,68 @@ class _RiderLoginScreenState extends ConsumerState<RiderLoginScreen>
         children: [
           // ── Purple Hero Header ────────────────────────────────
           Expanded(
-            flex: 5,
+            flex: 4,
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Logo mark
-                    Container(
-                      width: 68,
-                      height: 68,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
-                      ),
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.two_wheeler_rounded, color: Colors.white, size: 32),
-                          Text(
-                            'RIDER',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 9,
-                              letterSpacing: 1.2,
-                            ),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Logo mark
+                        Container(
+                          width: 58,
+                          height: 58,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
                           ),
-                        ],
-                      ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.two_wheeler_rounded, color: Colors.white, size: 28),
+                              Text(
+                                'RIDER',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 8,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        const Text(
+                          'Rider Portal',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 28,
+                            color: Colors.white,
+                            letterSpacing: -0.8,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Davao Fleet Dispatch · Live Operations',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'Rider Portal',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 32,
-                        color: Colors.white,
-                        letterSpacing: -0.8,
-                        height: 1.1,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Kabacan Fleet Dispatch\n& Live Delivery Stream.',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
@@ -288,7 +294,7 @@ class _RiderLoginScreenState extends ConsumerState<RiderLoginScreen>
                                     Icon(Icons.speed_rounded, size: 15, color: Color(0xFFFF6B24)),
                                     SizedBox(width: 6),
                                     Text(
-                                      'Quick Demo — Kabacan Riders',
+                                      'Quick Demo — Davao Toril Riders',
                                       style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: Color(0xFF0F172A)),
                                     ),
                                   ],

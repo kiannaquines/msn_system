@@ -49,10 +49,33 @@ class AdminRider {
   final String phone;
   final AdminRiderStatus status;
   final String? activeDelivery;
+  AdminRider copyWith({String? name, String? phone, AdminRiderStatus? status, String? activeDelivery}) => AdminRider(
+        id: id,
+        name: name ?? this.name,
+        phone: phone ?? this.phone,
+        status: status ?? this.status,
+        activeDelivery: activeDelivery ?? this.activeDelivery,
+      );
 }
 
 class LiveDelivery {
-  const LiveDelivery({required this.id, required this.orderId, required this.rider, required this.customer, required this.status, required this.updatedAt, required this.latitude, required this.longitude});
+  const LiveDelivery({
+    required this.id,
+    required this.orderId,
+    required this.rider,
+    required this.customer,
+    required this.status,
+    required this.updatedAt,
+    required this.latitude,
+    required this.longitude,
+    this.pickupLatitude,
+    this.pickupLongitude,
+    this.destinationLatitude,
+    this.destinationLongitude,
+    this.storeName = '',
+    this.deliveryAddress = '',
+    this.etaMinutes,
+  });
   final String id;
   final String orderId;
   final String rider;
@@ -61,6 +84,13 @@ class LiveDelivery {
   final DateTime updatedAt;
   final double latitude;
   final double longitude;
+  final double? pickupLatitude;
+  final double? pickupLongitude;
+  final double? destinationLatitude;
+  final double? destinationLongitude;
+  final String storeName;
+  final String deliveryAddress;
+  final int? etaMinutes;
   bool get stale => DateTime.now().difference(updatedAt) > const Duration(seconds: 45);
 }
 

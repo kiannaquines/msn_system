@@ -41,8 +41,9 @@ class SessionController extends StateNotifier<SessionState> {
       final profile = await _repository.login(email, password);
       state = SessionState(profile: profile);
       return true;
-    } catch (_) {
-      state = const SessionState(error: 'Unable to sign in. Please try again.');
+    } catch (e) {
+      final message = e.toString().replaceFirst('Exception: ', '').replaceFirst('ApiException: ', '');
+      state = SessionState(error: message.isNotEmpty ? message : 'Unable to sign in. Please check your credentials or connection.');
       return false;
     }
   }
@@ -53,8 +54,9 @@ class SessionController extends StateNotifier<SessionState> {
       final profile = await _repository.register(name, email, password);
       state = SessionState(profile: profile);
       return true;
-    } catch (_) {
-      state = const SessionState(error: 'Unable to create your account.');
+    } catch (e) {
+      final message = e.toString().replaceFirst('Exception: ', '').replaceFirst('ApiException: ', '');
+      state = SessionState(error: message.isNotEmpty ? message : 'Unable to create your account.');
       return false;
     }
   }

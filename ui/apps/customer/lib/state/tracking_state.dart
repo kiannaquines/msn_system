@@ -12,7 +12,7 @@ final trackingDeliveryProvider = StreamProvider.family<DeliverySnapshot, String>
   final refreshes = StreamController<void>.broadcast();
   StreamSubscription<Map<String, dynamic>>? realtimeSubscription;
   DeliveryRealtimeClient? realtimeClient;
-  final timer = Timer.periodic(const Duration(seconds: 10), (_) {
+  final timer = Timer.periodic(const Duration(seconds: 4), (_) {
     if (!refreshes.isClosed) refreshes.add(null);
   });
 

@@ -86,7 +86,23 @@ class AdminRepositoryImpl implements AdminRepository {
     final orders = (results[1] as List<shared.OrderSummary>).map((order) => AdminOrder(id: order.id, customer: 'Customer', store: order.storeName, total: order.total, status: _status(order.status), createdAt: order.createdAt ?? DateTime.now(), codPaid: order.paymentStatus == shared.PaymentStatus.paid)).toList();
     final riders = (results[2] as List<shared.Json>).map((json) => AdminRider(id: json['id'] as String, name: (json['name'] ?? json['full_name']) as String, phone: json['phone'] as String? ?? '', status: _riderStatus((json['status'] ?? json['rider_status']) as String?), activeDelivery: json['active_delivery_id'] as String?)).toList();
     final riderNames = {for (final rider in riders) rider.id: rider.name};
-    final deliveries = (results[3] as List<shared.Json>).map((json) => LiveDelivery(id: json['id'] as String, orderId: json['order_id'] as String, rider: json['rider_name'] as String? ?? riderNames[json['rider_id']] ?? 'Unassigned', customer: json['customer_name'] as String? ?? 'Customer', status: _status(shared.OrderStatus.fromApi(json['status'] as String)), updatedAt: DateTime.tryParse(json['last_location_at'] as String? ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0), latitude: (json['latitude'] as num?)?.toDouble() ?? 0, longitude: (json['longitude'] as num?)?.toDouble() ?? 0)).toList();
+    final deliveries = (results[3] as List<shared.Json>).map((json) => LiveDelivery(
+          id: json['id'] as String,
+          orderId: json['order_id'] as String,
+          rider: json['rider_name'] as String? ?? riderNames[json['rider_id']] ?? 'Unassigned',
+          customer: json['customer_name'] as String? ?? 'Customer',
+          status: _status(shared.OrderStatus.fromApi(json['status'] as String)),
+          updatedAt: DateTime.tryParse(json['last_location_at'] as String? ?? '') ?? DateTime.fromMillisecondsSinceEpoch(0),
+          latitude: (json['latitude'] as num?)?.toDouble() ?? 0,
+          longitude: (json['longitude'] as num?)?.toDouble() ?? 0,
+          pickupLatitude: (json['pickup_latitude'] as num?)?.toDouble(),
+          pickupLongitude: (json['pickup_longitude'] as num?)?.toDouble(),
+          destinationLatitude: (json['destination_latitude'] as num?)?.toDouble(),
+          destinationLongitude: (json['destination_longitude'] as num?)?.toDouble(),
+          storeName: json['store_name'] as String? ?? '',
+          deliveryAddress: json['delivery_address'] as String? ?? '',
+          etaMinutes: json['eta_minutes'] as int?,
+        )).toList();
     final feedback = (results[4] as List<shared.Json>).map((json) => FeedbackEntry(orderId: json['order_id'] as String, customer: json['customer_name'] as String? ?? 'Customer', rating: json['rating'] as int, comment: json['comment'] as String? ?? '', createdAt: DateTime.parse(json['created_at'] as String))).toList();
     final audit = (results[5] as List<shared.Json>).map((json) => AuditEntry(action: json['action'] as String, actor: json['actor_name'] as String? ?? 'System', target: json['target_id'] as String, reason: json['reason'] as String? ?? '', createdAt: DateTime.parse(json['created_at'] as String))).toList();
     final reportJson = results[6] as shared.Json;

@@ -16,7 +16,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
   final _email = TextEditingController(text: 'customer@mns.ph');
-  final _password = TextEditingController(text: 'CustPass123!');
+  final _password = TextEditingController(text: 'Password123!');
   bool _register = false;
   bool _obscure = true;
 
@@ -321,14 +321,58 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             ),
                           ),
 
-                          const SizedBox(height: 24),
+                          if (!_register) ...[
+                            const SizedBox(height: 18),
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Row(
+                                    children: [
+                                      Icon(Icons.vpn_key_rounded, size: 14, color: Color(0xFF7C3AED)),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Quick Fill Demo Accounts',
+                                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF334155)),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 6,
+                                    children: [
+                                      _buildQuickAccountChip(
+                                        label: 'Maria (customer@mns.ph)',
+                                        email: 'customer@mns.ph',
+                                        pass: 'Password123!',
+                                      ),
+                                      _buildQuickAccountChip(
+                                        label: 'Juan (customer.juan@mns.com)',
+                                        email: 'customer.juan@mns.com',
+                                        pass: 'Password123!',
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 20),
 
                           // Trust badge
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Icon(Icons.shield_outlined, size: 14, color: Color(0xFF10B981)),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6),
                               Text(
                                 'COD · Kabacan Deliveries · Secure & Safe',
                                 style: TextStyle(
@@ -385,6 +429,34 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         ),
       ),
       validator: validator,
+    );
+  }
+
+  Widget _buildQuickAccountChip({
+    required String label,
+    required String email,
+    required String pass,
+  }) {
+    return InkWell(
+      onTap: () {
+        setState(() {
+          _email.text = email;
+          _password.text = pass;
+        });
+      },
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFCBD5E1)),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
+        ),
+      ),
     );
   }
 }

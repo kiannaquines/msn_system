@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:mns_design_system/design_system.dart';
 
 import '../data/reverse_geocoder.dart';
 import '../models/customer_models.dart';
@@ -39,12 +40,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
   Future<void> _checkout(CartState cart) async {
     if (cart.lines.isEmpty || cart.store == null) return;
     if (_address.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter a delivery address in Kabacan.'),
-          backgroundColor: Color(0xFFDC2626),
-          behavior: SnackBarBehavior.floating,
-        ),
+      MnsSnackBar.show(
+        context,
+        title: 'Delivery Address Required',
+        message: 'Please enter a delivery address in Kabacan.',
+        type: MnsSnackBarType.warning,
       );
       return;
     }
@@ -89,28 +89,27 @@ class _CartScreenState extends ConsumerState<CartScreen> {
       if (!mounted) return;
       if (resolved != null) {
         setState(() => _address.text = resolved);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('📍 Address captured: $resolved'),
-            backgroundColor: const Color(0xFF059669),
-            behavior: SnackBarBehavior.floating,
-          ),
+        MnsSnackBar.show(
+          context,
+          title: 'Location Captured',
+          message: resolved,
+          type: MnsSnackBarType.success,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('GPS coordinates updated successfully!'),
-            behavior: SnackBarBehavior.floating,
-          ),
+        MnsSnackBar.show(
+          context,
+          title: 'GPS Updated',
+          message: 'GPS coordinates captured successfully.',
+          type: MnsSnackBarType.info,
         );
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(error.toString().replaceFirst('Exception: ', '')),
-            behavior: SnackBarBehavior.floating,
-          ),
+        MnsSnackBar.show(
+          context,
+          title: 'Location Error',
+          message: error.toString().replaceFirst('Exception: ', ''),
+          type: MnsSnackBarType.error,
         );
       }
     } finally {

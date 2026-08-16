@@ -71,10 +71,30 @@ def update_rider_status(
     rider: User = Depends(require_roles("rider")),
     db: Session = Depends(get_db),
 ) -> User:
-    if rider.rider_status == "busy" and payload.status != "busy":
-        active = db.scalar(select(func.count()).select_from(Order).where(Order.rider_id == rider.id, Order.status.in_(["assigned", "picked_up", "on_the_way"])))
-        if active:
-            raise HTTPException(status_code=409, detail="Rider has an active delivery")
+    active = db.scalar(
+        select(func.count())
+        .select_from(Order)
+        .where(Order.rider_id == rider.id, Order.status.in_(["assigned", "picked_up", "on_the_way"]))
+    )
+    if active and payload.status == "offline":
+        raise HTTPException(status_code=409, detail="Cannot switch to offline while you have an active delivery.")
+    rider.rider_status = "busy" if active else payload.status
+    db.commit()
+    db.refresh(rider)
+    return rider
+
+
+@router.patch("/riders/{rider_id}/status", response_model=UserResponse)
+@router.put("/riders/{rider_id}/status", response_model=UserResponse)
+def admin_update_rider_status(
+    rider_id: str,
+    payload: RiderStatusRequest,
+    _: User = Depends(require_roles("admin")),
+    db: Session = Depends(get_db),
+) -> User:
+    rider = db.scalar(select(User).where(User.id == rider_id, User.role == "rider"))
+    if not rider:
+        raise HTTPException(status_code=404, detail="Rider not found")
     rider.rider_status = payload.status
     db.commit()
     db.refresh(rider)

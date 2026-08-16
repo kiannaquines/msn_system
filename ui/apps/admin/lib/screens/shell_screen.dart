@@ -224,35 +224,153 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 18),
             child: PopupMenuButton<String>(
-              offset: const Offset(0, 48),
+              offset: const Offset(0, 50),
+              elevation: 16,
+              shadowColor: const Color(0x290F172A),
+              surfaceTintColor: Colors.transparent,
               color: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              menuPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
+                side: const BorderSide(color: Color(0xFFE2E8F0), width: 1),
+              ),
+              constraints: const BoxConstraints(minWidth: 260, maxWidth: 280),
               itemBuilder: (context) => [
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   enabled: false,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Administrator',
-                        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A)),
-                      ),
-                      Text(
-                        'admin@mns.ph',
-                        style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
-                      ),
-                      Divider(height: 16),
-                    ],
+                  padding: EdgeInsets.zero,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFEEF2F6)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF9D65E5), Color(0xFF7C3AED)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x339D65E5),
+                                    blurRadius: 6,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text(
+                                'AU',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Administrator',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 13,
+                                      color: Color(0xFF0F172A),
+                                      letterSpacing: -0.2,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'admin@mns.ph',
+                                    style: TextStyle(
+                                      color: Color(0xFF64748B),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFECFDF5),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFA7F3D0)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF10B981),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: SizedBox(width: 6, height: 6),
+                              ),
+                              SizedBox(width: 5),
+                              Text(
+                                'Active',
+                                style: TextStyle(
+                                  color: Color(0xFF065F46),
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 10.5,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const PopupMenuItem<String>(
+                const PopupMenuDivider(height: 12),
+                PopupMenuItem<String>(
                   value: 'logout',
-                  child: Row(
-                    children: [
-                      Icon(Icons.logout_rounded, size: 18, color: Color(0xFFDC2626)),
-                      SizedBox(width: 10),
-                      Text('Sign Out', style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.w700, fontSize: 13)),
-                    ],
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF1F2),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFFFE4E6)),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.logout_rounded, size: 16, color: Color(0xFFE11D48)),
+                        SizedBox(width: 8),
+                        Text(
+                          'Sign Out',
+                          style: TextStyle(
+                            color: Color(0xFFE11D48),
+                            fontWeight: FontWeight.w800,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                        Spacer(),
+                        Icon(Icons.arrow_forward_ios_rounded, size: 11, color: Color(0xFFFDA4AF)),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -266,33 +384,52 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                   }
                 }
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 13,
-                      backgroundColor: const Color(0xFF9D65E5),
-                      child: const Text(
-                        'AU',
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white),
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x080F172A),
+                        blurRadius: 4,
+                        offset: Offset(0, 1),
                       ),
-                    ),
-                    if (isDesktop) ...[
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Admin',
-                        style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w700, fontSize: 12),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B), size: 16),
                     ],
-                  ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 26,
+                        height: 26,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF9D65E5), Color(0xFF7C3AED)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'AU',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.white),
+                        ),
+                      ),
+                      if (isDesktop) ...[
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Admin',
+                          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w800, fontSize: 12),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF64748B), size: 16),
+                      ],
+                    ],
+                  ),
                 ),
               ),
             ),

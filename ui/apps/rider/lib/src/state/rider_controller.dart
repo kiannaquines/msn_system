@@ -41,6 +41,9 @@ class RiderState {
     this.trackingDeliveryId,
     this.pendingEvents = 0,
     this.errorMessage,
+    this.riderName,
+    this.riderEmail,
+    this.riderPhone,
   });
 
   final bool isRestoring;
@@ -51,6 +54,9 @@ class RiderState {
   final String? trackingDeliveryId;
   final int pendingEvents;
   final String? errorMessage;
+  final String? riderName;
+  final String? riderEmail;
+  final String? riderPhone;
 
   bool get isTracking => trackingDeliveryId != null;
 
@@ -65,6 +71,9 @@ class RiderState {
     int? pendingEvents,
     String? errorMessage,
     bool clearError = false,
+    String? riderName,
+    String? riderEmail,
+    String? riderPhone,
   }) =>
       RiderState(
         isRestoring: isRestoring ?? this.isRestoring,
@@ -76,6 +85,9 @@ class RiderState {
             clearTracking ? null : trackingDeliveryId ?? this.trackingDeliveryId,
         pendingEvents: pendingEvents ?? this.pendingEvents,
         errorMessage: clearError ? null : errorMessage ?? this.errorMessage,
+        riderName: riderName ?? this.riderName,
+        riderEmail: riderEmail ?? this.riderEmail,
+        riderPhone: riderPhone ?? this.riderPhone,
       );
 }
 
@@ -147,9 +159,34 @@ class RiderController extends StateNotifier<RiderState> {
                 delivery.status == OrderStatus.onTheWay))) {
       await stopTracking();
     }
+
+    String? riderName = state.riderName;
+    String? riderEmail = state.riderEmail;
+    String? riderPhone = state.riderPhone;
+    RiderStatus availability = state.availability;
+
+    try {
+      final meJson = await _api.me();
+      riderName = meJson['full_name'] as String?;
+      riderEmail = meJson['email'] as String?;
+      riderPhone = meJson['phone'] as String?;
+      final statusStr = meJson['rider_status'] as String?;
+      if (statusStr != null) {
+        availability = switch (statusStr) {
+          'available' => RiderStatus.available,
+          'busy' => RiderStatus.busy,
+          _ => RiderStatus.offline,
+        };
+      }
+    } catch (_) {}
+
     state = state.copyWith(
       deliveries: deliveries,
       pendingEvents: await _queue.count(),
+      riderName: riderName,
+      riderEmail: riderEmail,
+      riderPhone: riderPhone,
+      availability: availability,
     );
   }
 
@@ -169,10 +206,11 @@ class RiderController extends StateNotifier<RiderState> {
     state = state.copyWith(availability: availability, clearError: true);
     try {
       await _api.setRiderAvailability(availability);
-    } catch (_) {
+    } catch (e) {
+      final msg = e is ApiException ? e.message : 'Availability was not updated.';
       state = state.copyWith(
         availability: previous,
-        errorMessage: 'Availability was not updated.',
+        errorMessage: msg,
       );
     }
   }

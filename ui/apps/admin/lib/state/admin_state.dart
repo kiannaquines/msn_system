@@ -110,6 +110,24 @@ class AdminController extends StateNotifier<AdminState> {
     state = AdminState(authenticated: true, snapshot: AdminSnapshot(stores: data.stores, orders: data.orders, riders: riders, deliveries: data.deliveries, audit: [_audit('Rider created', rider.name, 'Operations staffing'), ...data.audit], feedback: data.feedback, report: data.report));
   }
 
+  Future<void> updateRider(AdminRider rider, {required String name, required String phone, required AdminRiderStatus status}) async {
+    final data = state.snapshot!;
+    final updated = rider.copyWith(name: name, phone: phone, status: status);
+    final riders = data.riders.map((r) => r.id == rider.id ? updated : r).toList();
+    state = AdminState(
+      authenticated: true,
+      snapshot: AdminSnapshot(
+        stores: data.stores,
+        orders: data.orders,
+        riders: riders,
+        deliveries: data.deliveries,
+        audit: [_audit('Rider updated', updated.name, 'Courier details update'), ...data.audit],
+        feedback: data.feedback,
+        report: data.report,
+      ),
+    );
+  }
+
   Future<void> assign(String orderId, AdminRider rider, String reason) async {
     final data = state.snapshot!;
     await _repository.assign(orderId, rider.id, reason);

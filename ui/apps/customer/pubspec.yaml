@@ -18,6 +18,7 @@ dependencies:
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   intl: ^0.20.1
+  http: ^1.3.0
   mns_api_client:
     path: ../../packages/api_client
   mns_domain_models:

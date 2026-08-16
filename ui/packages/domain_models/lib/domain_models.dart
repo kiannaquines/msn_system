@@ -140,7 +140,25 @@ class OrderSummary {
 }
 
 class DeliverySnapshot {
-  const DeliverySnapshot({required this.id, required this.orderId, required this.status, this.latitude, this.longitude, this.etaMinutes, this.lastLocationAt, this.storeName = '', this.customerName = '', this.deliveryAddress = '', this.pickupLatitude, this.pickupLongitude, this.destinationLatitude, this.destinationLongitude, this.total = 0, this.paymentStatus = PaymentStatus.unpaid});
+  const DeliverySnapshot({
+    required this.id,
+    required this.orderId,
+    required this.status,
+    this.latitude,
+    this.longitude,
+    this.etaMinutes,
+    this.lastLocationAt,
+    this.storeName = '',
+    this.customerName = '',
+    this.riderName,
+    this.deliveryAddress = '',
+    this.pickupLatitude,
+    this.pickupLongitude,
+    this.destinationLatitude,
+    this.destinationLongitude,
+    this.total = 0,
+    this.paymentStatus = PaymentStatus.unpaid,
+  });
   final String id;
   final String orderId;
   final OrderStatus status;
@@ -150,6 +168,7 @@ class DeliverySnapshot {
   final DateTime? lastLocationAt;
   final String storeName;
   final String customerName;
+  final String? riderName;
   final String deliveryAddress;
   final double? pickupLatitude;
   final double? pickupLongitude;
@@ -170,6 +189,7 @@ class DeliverySnapshot {
         lastLocationAt: DateTime.tryParse(json['last_location_at'] as String? ?? ''),
         storeName: json['store_name'] as String? ?? '',
         customerName: json['customer_name'] as String? ?? '',
+        riderName: json['rider_name'] as String?,
         deliveryAddress: json['delivery_address'] as String? ?? '',
         pickupLatitude: json['pickup_latitude'] == null ? null : _asDouble(json['pickup_latitude']),
         pickupLongitude: json['pickup_longitude'] == null ? null : _asDouble(json['pickup_longitude']),

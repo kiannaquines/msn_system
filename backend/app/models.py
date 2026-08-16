@@ -230,6 +230,6 @@ class IdempotencyRecord(Base):
 class DeliveryFeeConfig(Base):
     __tablename__ = "delivery_fee_config"
     id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
-    base_fee: Mapped[float] = mapped_column(Numeric(12, 2), default=50)
-    per_km_fee: Mapped[float] = mapped_column(Numeric(12, 2), default=10)
+    base_fee: Mapped[float] = mapped_column(Numeric(12, 2), default=40)
+    per_km_fee: Mapped[float] = mapped_column(Numeric(12, 2), default=5)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)

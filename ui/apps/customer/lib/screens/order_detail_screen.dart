@@ -4,9 +4,11 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart' hide Path;
+import 'package:mns_design_system/design_system.dart';
 import 'package:mns_domain_models/domain_models.dart' as shared;
 
 import '../models/customer_models.dart';
+import '../services/road_route_service.dart';
 import '../state/customer_state.dart';
 import '../state/tracking_state.dart';
 
@@ -21,6 +23,9 @@ class OrderDetailScreen extends ConsumerWidget {
     final stage = snapshot == null ? order.stage : _stage(snapshot.status);
     final active = !stage.isComplete;
     final liveEta = snapshot?.etaMinutes ?? order.etaMinutes;
+    final effectiveRiderName = (snapshot?.riderName != null && snapshot!.riderName!.isNotEmpty)
+        ? snapshot.riderName
+        : order.riderName;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -52,10 +57,10 @@ class OrderDetailScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          if (active) ...[
-            _TrackingMap(order: order, snapshot: snapshot, etaMinutes: liveEta, connected: tracking?.hasValue ?? false),
-            const SizedBox(height: 16),
+          _TrackingMap(order: order, snapshot: snapshot, etaMinutes: liveEta, connected: tracking?.hasValue ?? false),
+          const SizedBox(height: 16),
 
+          if (active) ...[
             // Rider Detail Card
             Container(
               padding: const EdgeInsets.all(16),
@@ -73,7 +78,7 @@ class OrderDetailScreen extends ConsumerWidget {
                     radius: 26,
                     backgroundColor: const Color(0xFF7C3AED),
                     child: Text(
-                      order.riderName?.isNotEmpty == true ? order.riderName!.substring(0, 1).toUpperCase() : 'R',
+                      effectiveRiderName?.isNotEmpty == true ? effectiveRiderName!.substring(0, 1).toUpperCase() : 'R',
                       style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: Colors.white),
                     ),
                   ),
@@ -85,11 +90,18 @@ class OrderDetailScreen extends ConsumerWidget {
                         const Text('Assigned Rider', style: TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w700)),
                         const SizedBox(height: 2),
                         Text(
-                          order.riderName ?? 'Assigning nearby rider...',
+                          effectiveRiderName ?? 'Assigning nearby rider...',
                           style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: Color(0xFF0F172A)),
                         ),
                         const SizedBox(height: 2),
-                        const Text('Motorcycle Courier · Kabacan Fleet', style: TextStyle(color: Color(0xFF059669), fontSize: 11, fontWeight: FontWeight.w800)),
+                        Text(
+                          effectiveRiderName != null ? 'Motorcycle Courier · Kabacan Fleet' : 'Pending dispatch confirmation',
+                          style: TextStyle(
+                            color: effectiveRiderName != null ? const Color(0xFF059669) : const Color(0xFF7C3AED),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -99,8 +111,11 @@ class OrderDetailScreen extends ConsumerWidget {
                       foregroundColor: const Color(0xFF7C3AED),
                     ),
                     onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Calling rider hotline...'), behavior: SnackBarBehavior.floating),
+                      MnsSnackBar.show(
+                        context,
+                        title: 'Connecting Call',
+                        message: effectiveRiderName != null ? 'Connecting to $effectiveRiderName hotline...' : 'Calling M&S Kabacan support...',
+                        type: MnsSnackBarType.info,
                       );
                     },
                     icon: const Icon(Icons.call_rounded, size: 20),
@@ -458,11 +473,43 @@ class _TrackingMap extends StatefulWidget {
 
 class _TrackingMapState extends State<_TrackingMap> {
   late final MapController _mapController;
+  List<LatLng>? _roadPoints;
 
   @override
   void initState() {
     super.initState();
     _mapController = MapController();
+    _fetchRoadPoints();
+  }
+
+  void _fetchRoadPoints() {
+    final storePos = _getStoreCoordinates(widget.order.store.name);
+    final destPos = _getCustomerCoordinates();
+    final riderPos = _getRiderCoordinates(storePos, destPos);
+    const mapboxToken = String.fromEnvironment('MAPBOX_PUBLIC_TOKEN');
+
+    const CustomerRoadRouteService().getRoutePoints(
+      origin: storePos,
+      waypoint: riderPos,
+      destination: destPos,
+      mapboxToken: mapboxToken,
+    ).then((points) {
+      if (mounted) {
+        setState(() => _roadPoints = points);
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(covariant _TrackingMap oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldLat = oldWidget.snapshot?.latitude;
+    final newLat = widget.snapshot?.latitude;
+    final oldLng = oldWidget.snapshot?.longitude;
+    final newLng = widget.snapshot?.longitude;
+    if (newLat != null && newLng != null && (oldLat != newLat || oldLng != newLng)) {
+      _mapController.move(LatLng(newLat, newLng), _mapController.camera.zoom);
+    }
   }
 
   @override
@@ -472,28 +519,38 @@ class _TrackingMapState extends State<_TrackingMap> {
   }
 
   LatLng _getStoreCoordinates(String storeName) {
+    if (widget.snapshot?.pickupLatitude != null && widget.snapshot?.pickupLongitude != null) {
+      return LatLng(widget.snapshot!.pickupLatitude!, widget.snapshot!.pickupLongitude!);
+    }
     final lower = storeName.toLowerCase();
-    if (lower.contains('penong')) return const LatLng(7.1125, 124.8285);
-    if (lower.contains('mcmillan')) return const LatLng(7.1082, 124.8210);
-    if (lower.contains('bogs')) return const LatLng(7.1070, 124.8250);
-    if (lower.contains('love bite')) return const LatLng(7.1095, 124.8240);
-    if (lower.contains('pastil')) return const LatLng(7.1055, 124.8195);
-    if (lower.contains('jollibee')) return const LatLng(7.1105, 124.8260);
-    if (lower.contains('macchiato')) return const LatLng(7.1068, 124.8215);
-    return const LatLng(7.1086, 124.8235);
+    if (lower.contains('penong')) return const LatLng(7.0235, 125.5015);
+    if (lower.contains('jollibee')) return const LatLng(7.0205, 125.4972);
+    if (lower.contains('inasal')) return const LatLng(7.0212, 125.4988);
+    if (lower.contains('kusina') || lower.contains('dabaw')) return const LatLng(7.0195, 125.4995);
+    if (lower.contains('balamban') || lower.contains('liempo')) return const LatLng(7.0188, 125.4965);
+    if (lower.contains('chowking')) return const LatLng(7.0208, 125.4978);
+    if (lower.contains('kapewe') || lower.contains('cafe')) return const LatLng(7.0175, 125.5030);
+    if (lower.contains('dencia')) return const LatLng(7.0220, 125.5020);
+    return const LatLng(7.0210, 125.4990);
   }
 
   LatLng _getCustomerCoordinates() {
+    if (widget.snapshot?.destinationLatitude != null && widget.snapshot?.destinationLongitude != null) {
+      return LatLng(widget.snapshot!.destinationLatitude!, widget.snapshot!.destinationLongitude!);
+    }
     if (widget.order.address.latitude != null && widget.order.address.longitude != null) {
       return LatLng(widget.order.address.latitude!, widget.order.address.longitude!);
     }
-    return const LatLng(7.1066, 124.8292);
+    return const LatLng(7.0245, 125.5035);
   }
 
   LatLng _getRiderCoordinates(LatLng store, LatLng dest) {
     if (widget.snapshot?.latitude != null && widget.snapshot?.longitude != null) {
       return LatLng(widget.snapshot!.latitude!, widget.snapshot!.longitude!);
     }
+    final status = widget.snapshot?.status;
+    if (status == shared.OrderStatus.delivered) return dest;
+    if (status == shared.OrderStatus.pending || status == shared.OrderStatus.confirmed) return store;
     return LatLng(
       (store.latitude + dest.latitude) / 2 + 0.0008,
       (store.longitude + dest.longitude) / 2 - 0.0005,
@@ -510,6 +567,9 @@ class _TrackingMapState extends State<_TrackingMap> {
     final storePos = _getStoreCoordinates(widget.order.store.name);
     final destPos = _getCustomerCoordinates();
     final riderPos = _getRiderCoordinates(storePos, destPos);
+    final effectiveRiderName = (widget.snapshot?.riderName != null && widget.snapshot!.riderName!.isNotEmpty)
+        ? widget.snapshot!.riderName
+        : widget.order.riderName;
 
     return Container(
       height: 280,
@@ -538,7 +598,7 @@ class _TrackingMapState extends State<_TrackingMap> {
               children: [
                 TileLayer(
                   urlTemplate: mapboxToken.isNotEmpty
-                      ? 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}@2x?access_token=$mapboxToken'
+                      ? 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxToken'
                       : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   userAgentPackageName: 'com.mns.delivery.customer',
                 ),
@@ -547,12 +607,12 @@ class _TrackingMapState extends State<_TrackingMap> {
                 PolylineLayer(
                   polylines: [
                     Polyline(
-                      points: [storePos, riderPos, destPos],
+                      points: _roadPoints ?? [storePos, riderPos, destPos],
                       strokeWidth: 8,
                       color: const Color(0xFF7C3AED).withValues(alpha: 0.25),
                     ),
                     Polyline(
-                      points: [storePos, riderPos, destPos],
+                      points: _roadPoints ?? [storePos, riderPos, destPos],
                       strokeWidth: 4,
                       color: const Color(0xFF7C3AED),
                     ),
@@ -622,17 +682,17 @@ class _TrackingMapState extends State<_TrackingMap> {
             ),
           ),
 
-          // Top Left: Live Status Badge
+          // Top Left: Live Status Badge (White Theme)
           Positioned(
             left: 12,
             top: 12,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E142F).withValues(alpha: 0.92),
+                color: Colors.white.withValues(alpha: 0.95),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white12),
-                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 6)],
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+                boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 10, offset: Offset(0, 3))],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -647,30 +707,71 @@ class _TrackingMapState extends State<_TrackingMap> {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    widget.connected ? 'LIVE GPS · KABACAN' : 'TRACKING FLEET',
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                    widget.connected ? 'LIVE GPS STREAM' : 'TRACKING FLEET',
+                    style: const TextStyle(color: Color(0xFF0F172A), fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 0.5),
                   ),
                 ],
               ),
             ),
           ),
 
-          // Top Right: Recenter Camera Button
+          // Top Right: Actions (Recenter + Fullscreen in White Theme)
           Positioned(
             right: 12,
             top: 12,
-            child: Material(
-              color: Colors.white,
-              shape: const CircleBorder(),
-              elevation: 4,
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () => _recenter(riderPos),
-                child: const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Icon(Icons.my_location_rounded, size: 20, color: Color(0xFF0F172A)),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Material(
+                  color: Colors.white,
+                  shape: const CircleBorder(),
+                  elevation: 4,
+                  shadowColor: const Color(0x14000000),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () => _recenter(riderPos),
+                    child: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: const Icon(Icons.my_location_rounded, size: 19, color: Color(0xFF7C3AED)),
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                Material(
+                  color: Colors.white,
+                  shape: const CircleBorder(),
+                  elevation: 4,
+                  shadowColor: const Color(0x14000000),
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => FullScreenCustomerMapScreen(
+                            order: widget.order,
+                            snapshot: widget.snapshot,
+                            etaMinutes: widget.etaMinutes,
+                            connected: widget.connected,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: const Icon(Icons.fullscreen_rounded, size: 19, color: Color(0xFF7C3AED)),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
@@ -706,15 +807,15 @@ class _TrackingMapState extends State<_TrackingMap> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          widget.order.riderName ?? 'Kabacan Fleet Courier',
+                          effectiveRiderName ?? 'M&S Fleet Courier',
                           style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF0F172A)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 1),
-                        const Text(
-                          'Dispatched via Motorcycle',
-                          style: TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600),
+                        Text(
+                          effectiveRiderName != null ? '🏍️ Motorcycle Courier · Verified' : 'Awaiting assignment',
+                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -732,6 +833,379 @@ class _TrackingMapState extends State<_TrackingMap> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class FullScreenCustomerMapScreen extends StatefulWidget {
+  const FullScreenCustomerMapScreen({
+    super.key,
+    required this.order,
+    required this.snapshot,
+    required this.etaMinutes,
+    required this.connected,
+  });
+
+  final CustomerOrder order;
+  final shared.DeliverySnapshot? snapshot;
+  final int etaMinutes;
+  final bool connected;
+
+  @override
+  State<FullScreenCustomerMapScreen> createState() => _FullScreenCustomerMapScreenState();
+}
+
+class _FullScreenCustomerMapScreenState extends State<FullScreenCustomerMapScreen> {
+  late final MapController _mapController;
+  List<LatLng>? _roadPoints;
+
+  @override
+  void initState() {
+    super.initState();
+    _mapController = MapController();
+    _fetchRoadPoints();
+  }
+
+  void _fetchRoadPoints() {
+    final storePos = _getStoreCoordinates(widget.order.store.name);
+    final destPos = _getCustomerCoordinates();
+    final riderPos = _getRiderCoordinates(storePos, destPos);
+    const mapboxToken = String.fromEnvironment('MAPBOX_PUBLIC_TOKEN');
+
+    const CustomerRoadRouteService().getRoutePoints(
+      origin: storePos,
+      waypoint: riderPos,
+      destination: destPos,
+      mapboxToken: mapboxToken,
+    ).then((points) {
+      if (mounted) {
+        setState(() => _roadPoints = points);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  LatLng _getStoreCoordinates(String storeName) {
+    if (widget.snapshot?.pickupLatitude != null && widget.snapshot?.pickupLongitude != null) {
+      return LatLng(widget.snapshot!.pickupLatitude!, widget.snapshot!.pickupLongitude!);
+    }
+    final lower = storeName.toLowerCase();
+    if (lower.contains('penong')) return const LatLng(7.0235, 125.5015);
+    if (lower.contains('jollibee')) return const LatLng(7.0205, 125.4972);
+    if (lower.contains('inasal')) return const LatLng(7.0212, 125.4988);
+    if (lower.contains('kusina') || lower.contains('dabaw')) return const LatLng(7.0195, 125.4995);
+    if (lower.contains('balamban') || lower.contains('liempo')) return const LatLng(7.0188, 125.4965);
+    if (lower.contains('chowking')) return const LatLng(7.0208, 125.4978);
+    if (lower.contains('kapewe') || lower.contains('cafe')) return const LatLng(7.0175, 125.5030);
+    if (lower.contains('dencia')) return const LatLng(7.0220, 125.5020);
+    return const LatLng(7.0210, 125.4990);
+  }
+
+  LatLng _getCustomerCoordinates() {
+    if (widget.snapshot?.destinationLatitude != null && widget.snapshot?.destinationLongitude != null) {
+      return LatLng(widget.snapshot!.destinationLatitude!, widget.snapshot!.destinationLongitude!);
+    }
+    if (widget.order.address.latitude != null && widget.order.address.longitude != null) {
+      return LatLng(widget.order.address.latitude!, widget.order.address.longitude!);
+    }
+    return const LatLng(7.0245, 125.5035);
+  }
+
+  LatLng _getRiderCoordinates(LatLng store, LatLng dest) {
+    if (widget.snapshot?.latitude != null && widget.snapshot?.longitude != null) {
+      return LatLng(widget.snapshot!.latitude!, widget.snapshot!.longitude!);
+    }
+    final status = widget.snapshot?.status;
+    if (status == shared.OrderStatus.delivered) return dest;
+    if (status == shared.OrderStatus.pending || status == shared.OrderStatus.confirmed) return store;
+    return LatLng(
+      (store.latitude + dest.latitude) / 2 + 0.0008,
+      (store.longitude + dest.longitude) / 2 - 0.0005,
+    );
+  }
+
+  void _recenter(LatLng pos) {
+    _mapController.move(pos, 15.2);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const mapboxToken = String.fromEnvironment('MAPBOX_PUBLIC_TOKEN');
+    final storePos = _getStoreCoordinates(widget.order.store.name);
+    final destPos = _getCustomerCoordinates();
+    final riderPos = _getRiderCoordinates(storePos, destPos);
+    final effectiveRiderName = (widget.snapshot?.riderName != null && widget.snapshot!.riderName!.isNotEmpty)
+        ? widget.snapshot!.riderName
+        : widget.order.riderName;
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Fullscreen Map Layer
+          Positioned.fill(
+            child: FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(
+                initialCenter: riderPos,
+                initialZoom: 14.8,
+                interactionOptions: const InteractionOptions(flags: InteractiveFlag.all),
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate: mapboxToken.isNotEmpty
+                      ? 'https://api.mapbox.com/styles/v1/mapbox/streets-v12/tiles/256/{z}/{x}/{y}@2x?access_token=$mapboxToken'
+                      : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.mns.delivery.customer',
+                ),
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: _roadPoints ?? [storePos, riderPos, destPos],
+                      strokeWidth: 9,
+                      color: const Color(0xFF7C3AED).withValues(alpha: 0.28),
+                    ),
+                    Polyline(
+                      points: _roadPoints ?? [storePos, riderPos, destPos],
+                      strokeWidth: 4.5,
+                      color: const Color(0xFF7C3AED),
+                    ),
+                  ],
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: storePos,
+                      width: 48,
+                      height: 48,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF7C3AED),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3))],
+                        ),
+                        child: const Icon(Icons.storefront_rounded, color: Colors.white, size: 22),
+                      ),
+                    ),
+                    Marker(
+                      point: riderPos,
+                      width: 56,
+                      height: 56,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF7C3AED),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF7C3AED).withValues(alpha: 0.45),
+                              blurRadius: 16,
+                              spreadRadius: 3,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(Icons.delivery_dining_rounded, color: Colors.white, size: 28),
+                      ),
+                    ),
+                    Marker(
+                      point: destPos,
+                      width: 48,
+                      height: 48,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3))],
+                        ),
+                        child: const Icon(Icons.home_rounded, color: Colors.white, size: 22),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Top Header Bar
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Material(
+                      color: Colors.white,
+                      shape: const CircleBorder(),
+                      elevation: 4,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => Navigator.pop(context),
+                        child: const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: Color(0xFF0F172A)),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        boxShadow: const [BoxShadow(color: Color(0x0E000000), blurRadius: 8, offset: Offset(0, 2))],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: widget.connected ? const Color(0xFF10B981) : const Color(0xFF7C3AED),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            widget.connected ? 'LIVE GPS STREAM' : 'TRACKING FLEET',
+                            style: const TextStyle(color: Color(0xFF0F172A), fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Material(
+                      color: Colors.white,
+                      shape: const CircleBorder(),
+                      elevation: 4,
+                      shadowColor: const Color(0x14000000),
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        onTap: () => _recenter(riderPos),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFE2E8F0)),
+                          ),
+                          child: const Icon(Icons.my_location_rounded, size: 20, color: Color(0xFF7C3AED)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Bottom Floating HUD Sheet
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: 24,
+            child: SafeArea(
+              child: Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0x16000000), blurRadius: 20, offset: Offset(0, 8)),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: const Color(0xFF7C3AED),
+                          child: Text(
+                            effectiveRiderName?.isNotEmpty == true ? effectiveRiderName!.substring(0, 1).toUpperCase() : 'R',
+                            style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Colors.white),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                effectiveRiderName ?? 'Assigning nearby rider...',
+                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                effectiveRiderName != null ? '🏍️ Motorcycle Courier · Verified Driver' : 'Pending dispatch confirmation',
+                                style: TextStyle(
+                                  color: effectiveRiderName != null ? const Color(0xFF059669) : const Color(0xFF7C3AED),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFECFDF5),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFA7F3D0)),
+                          ),
+                          child: Text(
+                            '${widget.etaMinutes} mins ETA',
+                            style: const TextStyle(color: Color(0xFF065F46), fontWeight: FontWeight.w900, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(height: 24, color: Color(0xFFF1F5F9)),
+                    Row(
+                      children: [
+                        const Icon(Icons.storefront_rounded, size: 18, color: Color(0xFF7C3AED)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            widget.order.store.name,
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF1E293B)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_rounded, size: 14, color: Color(0xFF94A3B8)),
+                        const SizedBox(width: 8),
+                        const Icon(Icons.home_rounded, size: 18, color: Color(0xFF10B981)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            widget.snapshot?.deliveryAddress.isNotEmpty == true ? widget.snapshot!.deliveryAddress : widget.order.address.address,
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF1E293B)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -124,11 +124,154 @@ abstract final class MnsTheme {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: Colors.white,
+        contentTextStyle: GoogleFonts.plusJakartaSans(
+          color: const Color(0xFF0F172A),
+          fontSize: 13,
+          fontWeight: FontWeight.w700,
+        ),
+        actionTextColor: const Color(0xFF7C3AED),
+        disabledActionTextColor: const Color(0xFF94A3B8),
+        behavior: SnackBarBehavior.floating,
+        elevation: 6,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
     );
 
     return baseTheme.copyWith(
       textTheme: GoogleFonts.plusJakartaSansTextTheme(baseTheme.textTheme),
       primaryTextTheme: GoogleFonts.plusJakartaSansTextTheme(baseTheme.primaryTextTheme),
+    );
+  }
+}
+
+enum MnsSnackBarType { info, success, error, warning }
+
+class MnsSnackBar {
+  static void show(
+    BuildContext context, {
+    required String message,
+    String? title,
+    MnsSnackBarType type = MnsSnackBarType.info,
+    Duration duration = const Duration(seconds: 4),
+    SnackBarAction? action,
+  }) {
+    Color accentColor;
+    Color borderColor;
+    IconData icon;
+
+    switch (type) {
+      case MnsSnackBarType.success:
+        accentColor = const Color(0xFF059669);
+        borderColor = const Color(0xFFA7F3D0);
+        icon = Icons.check_circle_rounded;
+        break;
+      case MnsSnackBarType.error:
+        accentColor = const Color(0xFFDC2626);
+        borderColor = const Color(0xFFFECACA);
+        icon = Icons.error_outline_rounded;
+        break;
+      case MnsSnackBarType.warning:
+        accentColor = const Color(0xFFD97706);
+        borderColor = const Color(0xFFFDE68A);
+        icon = Icons.warning_amber_rounded;
+        break;
+      case MnsSnackBarType.info:
+        accentColor = const Color(0xFF7C3AED);
+        borderColor = const Color(0xFFE2E8F0);
+        icon = Icons.info_outline_rounded;
+        break;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: EdgeInsets.zero,
+        duration: duration,
+        content: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: borderColor, width: 1.2),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x18000000),
+                blurRadius: 18,
+                spreadRadius: 0,
+                offset: Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: accentColor, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (title != null && title.isNotEmpty) ...[
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Color(0xFF0F172A),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                    ],
+                    Text(
+                      message,
+                      style: TextStyle(
+                        color: title != null ? const Color(0xFF64748B) : const Color(0xFF0F172A),
+                        fontWeight: title != null ? FontWeight.w600 : FontWeight.w700,
+                        fontSize: 12.5,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (action != null) ...[
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: action.onPressed,
+                  style: TextButton.styleFrom(
+                    foregroundColor: action.textColor ?? accentColor,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: Text(
+                    action.label,
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
