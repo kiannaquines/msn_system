@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mns_design_system/design_system.dart';
 
 import '../models/customer_models.dart';
 import '../state/customer_state.dart';
@@ -57,16 +58,11 @@ class AddressesScreen extends ConsumerWidget {
     if (confirmed == true && address.id != null) {
       final success = await ref.read(addressesProvider.notifier).deleteAddress(address.id!);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              success ? 'Address "${address.label}" removed.' : 'Failed to remove address. Please try again.',
-              style: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-            backgroundColor: success ? const Color(0xFF1E142F) : const Color(0xFFEF4444),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
+        MnsSnackBar.show(
+          context,
+          title: success ? 'Address Removed' : 'Error',
+          message: success ? 'Address "${address.label}" was removed.' : 'Failed to remove address. Please try again.',
+          type: success ? MnsSnackBarType.info : MnsSnackBarType.error,
         );
       }
     }
@@ -152,7 +148,7 @@ class AddressesScreen extends ConsumerWidget {
                       const Text('No saved addresses yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
                       const SizedBox(height: 8),
                       const Text(
-                        'Save your home, office, or dorm address in Kabacan for fast 1-tap ordering.',
+                        'Save your home, office, or frequently visited addresses for fast 1-tap ordering.',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),
                       ),

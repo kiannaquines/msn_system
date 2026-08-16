@@ -508,7 +508,7 @@ class _ShellScreenState extends ConsumerState<ShellScreen> {
                     ),
                   ),
                   Text(
-                    'Kabacan Operations Hub',
+                    'Central Operations Hub',
                     style: TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600),
                   ),
                 ],

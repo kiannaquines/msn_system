@@ -15,8 +15,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _name = TextEditingController();
-  final _email = TextEditingController(text: 'customer@mns.ph');
-  final _password = TextEditingController(text: 'Password123!');
+  final _email = TextEditingController();
+  final _password = TextEditingController();
   bool _register = false;
   bool _obscure = true;
 
@@ -53,14 +53,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   }
 
   void _toggleMode() {
+    ref.read(sessionProvider.notifier).clearError();
     setState(() {
       _register = !_register;
-      if (_register) {
-        _name.text = 'Maria Santos';
-        _email.text = 'maria.santos@mns.ph';
-      } else {
-        _email.text = 'customer@mns.ph';
-      }
     });
     _anim.forward(from: 0);
   }
@@ -84,69 +79,73 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Logo mark
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
-                      ),
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.delivery_dining_rounded, color: Colors.white, size: 30),
-                          Text(
-                            'M&S',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 10,
-                              letterSpacing: 0.8,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 8),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Logo mark
+                      Container(
+                        width: 54,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.25), width: 1.5),
+                        ),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.delivery_dining_rounded, color: Colors.white, size: 26),
+                            Text(
+                              'M&S',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 9,
+                                letterSpacing: 0.8,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: Column(
-                        key: ValueKey(_register),
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _register ? 'Create account' : 'Welcome back',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 32,
-                              color: Colors.white,
-                              letterSpacing: -0.8,
-                              height: 1.1,
+                      const SizedBox(height: 12),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: Column(
+                          key: ValueKey(_register),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _register ? 'Create account' : 'Welcome back',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 28,
+                                color: Colors.white,
+                                letterSpacing: -0.8,
+                                height: 1.1,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _register
-                                ? 'Fresh favorites, a few taps away.'
-                                : 'Sign in to order and track\nyour delivery in Kabacan.',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.7),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              height: 1.4,
+                            const SizedBox(height: 6),
+                            Text(
+                              _register
+                                  ? 'Create your account to start ordering fresh food.'
+                                  : 'Sign in to order and track your delivery.',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.75),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                height: 1.3,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -321,50 +320,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             ),
                           ),
 
-                          if (!_register) ...[
-                            const SizedBox(height: 18),
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF8FAFC),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: const Color(0xFFE2E8F0)),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Row(
-                                    children: [
-                                      Icon(Icons.vpn_key_rounded, size: 14, color: Color(0xFF7C3AED)),
-                                      SizedBox(width: 6),
-                                      Text(
-                                        'Quick Fill Demo Accounts',
-                                        style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w800, color: Color(0xFF334155)),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 6,
-                                    children: [
-                                      _buildQuickAccountChip(
-                                        label: 'Maria (customer@mns.ph)',
-                                        email: 'customer@mns.ph',
-                                        pass: 'Password123!',
-                                      ),
-                                      _buildQuickAccountChip(
-                                        label: 'Juan (customer.juan@mns.com)',
-                                        email: 'customer.juan@mns.com',
-                                        pass: 'Password123!',
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-
                           const SizedBox(height: 20),
 
                           // Trust badge
@@ -372,9 +327,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Icon(Icons.shield_outlined, size: 14, color: Color(0xFF10B981)),
-                              SizedBox(width: 6),
+                              const SizedBox(width: 6),
                               Text(
-                                'COD · Kabacan Deliveries · Secure & Safe',
+                                'Cash on Delivery · Verified Courier Network',
                                 style: TextStyle(
                                   color: const Color(0xFF64748B).withValues(alpha: 0.8),
                                   fontSize: 11,
@@ -429,34 +384,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         ),
       ),
       validator: validator,
-    );
-  }
-
-  Widget _buildQuickAccountChip({
-    required String label,
-    required String email,
-    required String pass,
-  }) {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _email.text = email;
-          _password.text = pass;
-        });
-      },
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFCBD5E1)),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF475569)),
-        ),
-      ),
     );
   }
 }

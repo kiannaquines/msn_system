@@ -7,20 +7,15 @@ import 'package:mns_rider/src/state/rider_controller.dart';
 
 String _resolveZone(List<DeliverySnapshot> deliveries) {
   for (final d in deliveries) {
-    final text = '${d.deliveryAddress} ${d.storeName}'.toLowerCase();
-    if (text.contains('toril')) return 'Davao Toril';
-    if (text.contains('matina')) return 'Davao Matina';
-    if (text.contains('bajada')) return 'Davao Bajada';
-    if (text.contains('davao')) return 'Davao City';
-    if (text.contains('kabacan')) return 'Kabacan';
     if (d.deliveryAddress.isNotEmpty) {
       final parts = d.deliveryAddress.split(',');
       if (parts.length >= 2) {
         return parts[parts.length - 2].trim();
       }
+      return d.deliveryAddress;
     }
   }
-  return 'Davao Toril';
+  return 'Active Delivery Zone';
 }
 
 class RiderHomeScreen extends ConsumerWidget {

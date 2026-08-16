@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mns_design_system/design_system.dart';
 
 import '../models/customer_models.dart';
 import '../state/customer_state.dart';
@@ -56,7 +57,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       ),
       body: menu.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFFF6B24)),
+          child: CircularProgressIndicator(color: Color(0xFF7C3AED)),
         ),
         error: (_, __) => Center(
           child: FilledButton.tonal(
@@ -129,7 +130,7 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
                                     borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: const Text(
-                                    'OPEN NOW · KABACAN',
+                                    'OPEN NOW · EXPRESS DELIVERY',
                                     style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 0.5),
                                   ),
                                 ),
@@ -346,7 +347,7 @@ String _getStorePhoto(String name) {
 List<Color> _getStoreGradient(String name) {
   final lower = name.toLowerCase();
   if (lower.contains('penong') || lower.contains('inasal')) {
-    return [const Color(0xFFE11D48), const Color(0xFFFF6B24), const Color(0xFFFBBF24)];
+    return [const Color(0xFF7C3AED), const Color(0xFF9D65E5), const Color(0xFFC084FC)];
   }
   if (lower.contains('pastil') || lower.contains('native')) {
     return [const Color(0xFF047857), const Color(0xFF10B981), const Color(0xFF6EE7B7)];
@@ -382,7 +383,7 @@ IconData _getItemIcon(String name, String category) {
 List<Color> _getItemGradient(String name, String category) {
   final text = '$name $category'.toLowerCase();
   if (text.contains('chicken') || text.contains('inasal') || text.contains('joy')) {
-    return [const Color(0xFFFF6B24), const Color(0xFFFF8E53), const Color(0xFFFBBF24)];
+    return [const Color(0xFF7C3AED), const Color(0xFF9D65E5), const Color(0xFFC084FC)];
   }
   if (text.contains('bbq') || text.contains('sisig') || text.contains('bulalo') || text.contains('pata') || text.contains('bulgogi')) {
     return [const Color(0xFF991B1B), const Color(0xFFDC2626), const Color(0xFFF97316)];
@@ -540,12 +541,12 @@ class _MenuCard extends ConsumerWidget {
               onPressed: item.available
                   ? () {
                       ref.read(cartProvider.notifier).add(store, item);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('${item.name} added to cart'),
-                          duration: const Duration(milliseconds: 700),
-                          behavior: SnackBarBehavior.floating,
-                        ),
+                      MnsSnackBar.show(
+                        context,
+                        title: 'Added to Cart',
+                        message: '${item.name} added to your basket',
+                        type: MnsSnackBarType.success,
+                        duration: const Duration(milliseconds: 1400),
                       );
                     }
                   : null,

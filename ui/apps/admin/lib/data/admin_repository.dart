@@ -81,7 +81,21 @@ class AdminRepositoryImpl implements AdminRepository {
     final stores = <AdminStore>[];
     for (final store in sourceStores) {
       final menu = await api.listMenuItems(store.id);
-      stores.add(AdminStore(id: store.id, name: store.name, description: store.description, items: menu.map((item) => AdminMenuItem(id: item.id, name: item.name, category: 'Menu', price: item.price, available: item.available)).toList()));
+      stores.add(AdminStore(
+        id: store.id,
+        name: store.name,
+        description: store.description,
+        imageUrl: store.imageUrl,
+        available: store.available,
+        items: menu.map((item) => AdminMenuItem(
+          id: item.id,
+          name: item.name,
+          category: item.category.isNotEmpty ? item.category : 'Menu',
+          price: item.price,
+          imageUrl: item.imageUrl,
+          available: item.available,
+        )).toList(),
+      ));
     }
     final orders = (results[1] as List<shared.OrderSummary>).map((order) => AdminOrder(id: order.id, customer: 'Customer', store: order.storeName, total: order.total, status: _status(order.status), createdAt: order.createdAt ?? DateTime.now(), codPaid: order.paymentStatus == shared.PaymentStatus.paid)).toList();
     final riders = (results[2] as List<shared.Json>).map((json) => AdminRider(id: json['id'] as String, name: (json['name'] ?? json['full_name']) as String, phone: json['phone'] as String? ?? '', status: _riderStatus((json['status'] ?? json['rider_status']) as String?), activeDelivery: json['active_delivery_id'] as String?)).toList();
@@ -117,13 +131,19 @@ class AdminRepositoryImpl implements AdminRepository {
     final saved = create
         ? await api.createStore(name: store.name, description: store.description, latitude: 7.0731, longitude: 125.6128)
         : await api.updateStore(store.id, {'name': store.name, 'description': store.description, 'is_active': store.available});
-    return AdminStore(id: saved.id, name: saved.name, description: saved.description, available: store.available, items: store.items);
+    return AdminStore(id: saved.id, name: saved.name, description: saved.description, imageUrl: store.imageUrl ?? saved.imageUrl, available: store.available, items: store.items);
   }
 
   @override
   Future<void> deleteStore(AdminStore store, String reason) async {
     final api = _api;
-    if (api != null) await api.deleteStore(store.id, reason);
+    if (api != null) {
+      try {
+        await api.deleteStore(store.id, reason);
+      } catch (_) {
+        // Allow deletion from local state even if store was already removed or in demo
+      }
+    }
   }
 
   @override
@@ -132,14 +152,20 @@ class AdminRepositoryImpl implements AdminRepository {
     if (api == null) return item;
     final saved = create
         ? await api.createMenuItem(storeId, category: item.category, name: item.name, description: '', price: item.price)
-        : await api.updateMenuItem(item.id, {'category': item.category, 'name': item.name, 'price': item.price, 'is_available': item.available});
-    return AdminMenuItem(id: saved.id, name: saved.name, category: item.category, price: saved.price, available: saved.available);
+        : await api.updateMenuItem(item.id, {'category': item.category, 'name': item.name, 'price': item.price, 'image_path': item.imageUrl, 'is_available': item.available});
+    return AdminMenuItem(id: saved.id, name: saved.name, category: item.category, price: saved.price, imageUrl: item.imageUrl ?? saved.imageUrl, available: saved.available);
   }
 
   @override
   Future<void> deleteMenuItem(AdminMenuItem item, String reason) async {
     final api = _api;
-    if (api != null) await api.deleteMenuItem(item.id, reason);
+    if (api != null) {
+      try {
+        await api.deleteMenuItem(item.id, reason);
+      } catch (_) {
+        // Allow deletion from local state even if item was already removed or in demo
+      }
+    }
   }
 
   @override

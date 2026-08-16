@@ -36,26 +36,44 @@ typedef Json = Map<String, dynamic>;
 double _asDouble(Object? value) => value is num ? value.toDouble() : double.parse(value.toString());
 
 class Store {
-  const Store({required this.id, required this.name, this.description = '', this.imageUrl});
+  const Store({
+    required this.id,
+    required this.name,
+    this.description = '',
+    this.imageUrl,
+    this.available = true,
+  });
   final String id;
   final String name;
   final String description;
   final String? imageUrl;
+  final bool available;
 
   factory Store.fromJson(Json json) => Store(
         id: json['id'] as String,
         name: json['name'] as String,
         description: json['description'] as String? ?? '',
         imageUrl: json['image_url'] as String?,
+        available: (json['available'] ?? json['is_active']) as bool? ?? true,
       );
 }
 
 class MenuItem {
-  const MenuItem({required this.id, required this.storeId, required this.name, required this.price, this.description = '', this.imageUrl, this.available = true});
+  const MenuItem({
+    required this.id,
+    required this.storeId,
+    required this.name,
+    required this.price,
+    this.category = 'General',
+    this.description = '',
+    this.imageUrl,
+    this.available = true,
+  });
   final String id;
   final String storeId;
   final String name;
   final double price;
+  final String category;
   final String description;
   final String? imageUrl;
   final bool available;
@@ -65,6 +83,7 @@ class MenuItem {
         storeId: json['store_id'] as String,
         name: json['name'] as String,
         price: _asDouble(json['price']),
+        category: json['category'] as String? ?? 'General',
         description: json['description'] as String? ?? '',
         imageUrl: json['image_url'] as String?,
         available: json['available'] as bool? ?? true,

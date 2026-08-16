@@ -13,8 +13,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen>
     with SingleTickerProviderStateMixin {
   final _form = GlobalKey<FormState>();
-  final _email = TextEditingController(text: 'admin@mns.ph');
-  final _password = TextEditingController(text: 'AdminPass123!');
+  final _email = TextEditingController();
+  final _password = TextEditingController();
   bool _obscurePassword = true;
 
   late final AnimationController _anim;
@@ -286,50 +286,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               label: state.loading
                   ? const SizedBox.shrink()
                   : const Text('Sign in', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900)),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          // Demo credentials
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFE5DEEE)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.info_outline_rounded, size: 15, color: Color(0xFF94A3B8)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text.rich(
-                    TextSpan(
-                      text: 'Demo: ',
-                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF64748B)),
-                      children: const [
-                        TextSpan(text: 'admin@mns.ph', style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
-                        TextSpan(text: ' · AdminPass123!'),
-                      ],
-                    ),
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => setState(() {
-                    _email.text = 'admin@mns.ph';
-                    _password.text = 'AdminPass123!';
-                  }),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF7C3AED).withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text('Fill', style: TextStyle(color: Color(0xFF7C3AED), fontWeight: FontWeight.w800, fontSize: 11)),
-                  ),
-                ),
-              ],
             ),
           ),
         ],

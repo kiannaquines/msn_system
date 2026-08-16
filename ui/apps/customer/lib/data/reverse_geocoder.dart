@@ -56,8 +56,8 @@ class ReverseGeocoder {
       // Fallthrough
     }
 
-    // 3. Fallback to Kabacan coordinates
-    return 'Poblacion, Kabacan, Cotabato (${latitude.toStringAsFixed(4)}, ${longitude.toStringAsFixed(4)})';
+    // 3. Fallback coordinate label
+    return 'Location Pin (${latitude.toStringAsFixed(4)}, ${longitude.toStringAsFixed(4)})';
   }
 
   static String _cleanPhilippineAddress(String raw) {

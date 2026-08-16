@@ -46,9 +46,13 @@ def delete_address(
 
 
 @router.get("/stores", response_model=list[StoreResponse])
-def list_stores(user: User = Depends(current_user), db: Session = Depends(get_db)) -> list[Store]:
+def list_stores(
+    include_inactive: bool = Query(default=False),
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+) -> list[Store]:
     query = select(Store).order_by(Store.name)
-    if user.role != "admin":
+    if not (user.role == "admin" and include_inactive):
         query = query.where(Store.is_active.is_(True))
     return list(db.scalars(query).all())
 

@@ -95,7 +95,7 @@ class OrderDetailScreen extends ConsumerWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          effectiveRiderName != null ? 'Motorcycle Courier · Kabacan Fleet' : 'Pending dispatch confirmation',
+                          effectiveRiderName != null ? 'Motorcycle Courier · Verified Fleet' : 'Pending dispatch confirmation',
                           style: TextStyle(
                             color: effectiveRiderName != null ? const Color(0xFF059669) : const Color(0xFF7C3AED),
                             fontSize: 11,
@@ -114,7 +114,7 @@ class OrderDetailScreen extends ConsumerWidget {
                       MnsSnackBar.show(
                         context,
                         title: 'Connecting Call',
-                        message: effectiveRiderName != null ? 'Connecting to $effectiveRiderName hotline...' : 'Calling M&S Kabacan support...',
+                        message: effectiveRiderName != null ? 'Connecting to $effectiveRiderName hotline...' : 'Calling M&S customer support...',
                         type: MnsSnackBarType.info,
                       );
                     },
@@ -377,7 +377,7 @@ class _FeedbackDialogState extends ConsumerState<_FeedbackDialog> {
                           ),
                           SizedBox(height: 2),
                           Text(
-                            'Help us maintain top-tier service in Kabacan',
+                            'Help us maintain top-tier service',
                             style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
                           ),
                         ],
@@ -483,14 +483,12 @@ class _TrackingMapState extends State<_TrackingMap> {
   }
 
   void _fetchRoadPoints() {
-    final storePos = _getStoreCoordinates(widget.order.store.name);
     final destPos = _getCustomerCoordinates();
-    final riderPos = _getRiderCoordinates(storePos, destPos);
+    final riderPos = _getRiderCoordinates(destPos);
     const mapboxToken = String.fromEnvironment('MAPBOX_PUBLIC_TOKEN');
 
     const CustomerRoadRouteService().getRoutePoints(
-      origin: storePos,
-      waypoint: riderPos,
+      origin: riderPos,
       destination: destPos,
       mapboxToken: mapboxToken,
     ).then((points) {
@@ -509,6 +507,7 @@ class _TrackingMapState extends State<_TrackingMap> {
     final newLng = widget.snapshot?.longitude;
     if (newLat != null && newLng != null && (oldLat != newLat || oldLng != newLng)) {
       _mapController.move(LatLng(newLat, newLng), _mapController.camera.zoom);
+      _fetchRoadPoints();
     }
   }
 
@@ -544,17 +543,17 @@ class _TrackingMapState extends State<_TrackingMap> {
     return const LatLng(7.0245, 125.5035);
   }
 
-  LatLng _getRiderCoordinates(LatLng store, LatLng dest) {
+  LatLng _getRiderCoordinates(LatLng dest) {
     if (widget.snapshot?.latitude != null && widget.snapshot?.longitude != null) {
       return LatLng(widget.snapshot!.latitude!, widget.snapshot!.longitude!);
     }
+    if (widget.snapshot?.pickupLatitude != null && widget.snapshot?.pickupLongitude != null) {
+      return LatLng(widget.snapshot!.pickupLatitude!, widget.snapshot!.pickupLongitude!);
+    }
+    final storePos = _getStoreCoordinates(widget.order.store.name);
     final status = widget.snapshot?.status;
     if (status == shared.OrderStatus.delivered) return dest;
-    if (status == shared.OrderStatus.pending || status == shared.OrderStatus.confirmed) return store;
-    return LatLng(
-      (store.latitude + dest.latitude) / 2 + 0.0008,
-      (store.longitude + dest.longitude) / 2 - 0.0005,
-    );
+    return storePos;
   }
 
   void _recenter(LatLng pos) {
@@ -564,12 +563,84 @@ class _TrackingMapState extends State<_TrackingMap> {
   @override
   Widget build(BuildContext context) {
     const mapboxToken = String.fromEnvironment('MAPBOX_PUBLIC_TOKEN');
-    final storePos = _getStoreCoordinates(widget.order.store.name);
     final destPos = _getCustomerCoordinates();
-    final riderPos = _getRiderCoordinates(storePos, destPos);
+    final riderPos = _getRiderCoordinates(destPos);
     final effectiveRiderName = (widget.snapshot?.riderName != null && widget.snapshot!.riderName!.isNotEmpty)
         ? widget.snapshot!.riderName
         : widget.order.riderName;
+
+    final hasRider = (effectiveRiderName != null && effectiveRiderName.isNotEmpty) &&
+        (widget.snapshot?.status == shared.OrderStatus.assigned ||
+            widget.snapshot?.status == shared.OrderStatus.pickedUp ||
+            widget.snapshot?.status == shared.OrderStatus.onTheWay ||
+            widget.snapshot?.status == shared.OrderStatus.delivered ||
+            widget.order.stage == OrderStage.assigned ||
+            widget.order.stage == OrderStage.pickedUp ||
+            widget.order.stage == OrderStage.onTheWay ||
+            widget.order.stage == OrderStage.delivered);
+
+    if (!hasRider) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          boxShadow: const [
+            BoxShadow(color: Color(0x08000000), blurRadius: 18, offset: Offset(0, 6)),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E8FF),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFE9D5FF), width: 2),
+              ),
+              child: const Icon(Icons.two_wheeler_rounded, color: Color(0xFF7C3AED), size: 26),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Finding your delivery rider...',
+              style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A), letterSpacing: -0.3),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Your order at ${widget.order.store.name} is confirmed. Map & GPS directions will activate once a rider is assigned.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, height: 1.35),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox.square(
+                    dimension: 12,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF7C3AED)),
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'Looking for available couriers nearby',
+                    style: TextStyle(color: Color(0xFF7C3AED), fontWeight: FontWeight.w800, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
 
     return Container(
       height: 280,
@@ -603,42 +674,26 @@ class _TrackingMapState extends State<_TrackingMap> {
                   userAgentPackageName: 'com.mns.delivery.customer',
                 ),
 
-                // Glow Route
+                // Direction Route Polyline (Rider to Customer Destination)
                 PolylineLayer(
                   polylines: [
                     Polyline(
-                      points: _roadPoints ?? [storePos, riderPos, destPos],
+                      points: _roadPoints ?? [riderPos, destPos],
                       strokeWidth: 8,
                       color: const Color(0xFF7C3AED).withValues(alpha: 0.25),
                     ),
                     Polyline(
-                      points: _roadPoints ?? [storePos, riderPos, destPos],
+                      points: _roadPoints ?? [riderPos, destPos],
                       strokeWidth: 4,
                       color: const Color(0xFF7C3AED),
                     ),
                   ],
                 ),
 
-                // Markers
+                // Markers (Rider Location & Customer Destination)
                 MarkerLayer(
                   markers: [
-                    // 1. Store Marker
-                    Marker(
-                      point: storePos,
-                      width: 44,
-                      height: 44,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF7C3AED),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 2.5),
-                          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3))],
-                        ),
-                        child: const Icon(Icons.storefront_rounded, color: Colors.white, size: 20),
-                      ),
-                    ),
-
-                    // 2. Rider Marker
+                    // 1. Rider Marker
                     Marker(
                       point: riderPos,
                       width: 50,
@@ -661,7 +716,7 @@ class _TrackingMapState extends State<_TrackingMap> {
                       ),
                     ),
 
-                    // 3. Customer Destination Marker
+                    // 2. Customer Destination Marker
                     Marker(
                       point: destPos,
                       width: 44,
@@ -807,15 +862,15 @@ class _TrackingMapState extends State<_TrackingMap> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          effectiveRiderName ?? 'M&S Fleet Courier',
+                          effectiveRiderName,
                           style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13, color: Color(0xFF0F172A)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 1),
-                        Text(
-                          effectiveRiderName != null ? '🏍️ Motorcycle Courier · Verified' : 'Awaiting assignment',
-                          style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600),
+                        const Text(
+                          '🏍️ Motorcycle Courier · Verified',
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 11, fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -872,14 +927,12 @@ class _FullScreenCustomerMapScreenState extends State<FullScreenCustomerMapScree
   }
 
   void _fetchRoadPoints() {
-    final storePos = _getStoreCoordinates(widget.order.store.name);
     final destPos = _getCustomerCoordinates();
-    final riderPos = _getRiderCoordinates(storePos, destPos);
+    final riderPos = _getRiderCoordinates(destPos);
     const mapboxToken = String.fromEnvironment('MAPBOX_PUBLIC_TOKEN');
 
     const CustomerRoadRouteService().getRoutePoints(
-      origin: storePos,
-      waypoint: riderPos,
+      origin: riderPos,
       destination: destPos,
       mapboxToken: mapboxToken,
     ).then((points) {
@@ -921,17 +974,17 @@ class _FullScreenCustomerMapScreenState extends State<FullScreenCustomerMapScree
     return const LatLng(7.0245, 125.5035);
   }
 
-  LatLng _getRiderCoordinates(LatLng store, LatLng dest) {
+  LatLng _getRiderCoordinates(LatLng dest) {
     if (widget.snapshot?.latitude != null && widget.snapshot?.longitude != null) {
       return LatLng(widget.snapshot!.latitude!, widget.snapshot!.longitude!);
     }
+    if (widget.snapshot?.pickupLatitude != null && widget.snapshot?.pickupLongitude != null) {
+      return LatLng(widget.snapshot!.pickupLatitude!, widget.snapshot!.pickupLongitude!);
+    }
+    final storePos = _getStoreCoordinates(widget.order.store.name);
     final status = widget.snapshot?.status;
     if (status == shared.OrderStatus.delivered) return dest;
-    if (status == shared.OrderStatus.pending || status == shared.OrderStatus.confirmed) return store;
-    return LatLng(
-      (store.latitude + dest.latitude) / 2 + 0.0008,
-      (store.longitude + dest.longitude) / 2 - 0.0005,
-    );
+    return storePos;
   }
 
   void _recenter(LatLng pos) {
@@ -941,9 +994,8 @@ class _FullScreenCustomerMapScreenState extends State<FullScreenCustomerMapScree
   @override
   Widget build(BuildContext context) {
     const mapboxToken = String.fromEnvironment('MAPBOX_PUBLIC_TOKEN');
-    final storePos = _getStoreCoordinates(widget.order.store.name);
     final destPos = _getCustomerCoordinates();
-    final riderPos = _getRiderCoordinates(storePos, destPos);
+    final riderPos = _getRiderCoordinates(destPos);
     final effectiveRiderName = (widget.snapshot?.riderName != null && widget.snapshot!.riderName!.isNotEmpty)
         ? widget.snapshot!.riderName
         : widget.order.riderName;
@@ -970,12 +1022,12 @@ class _FullScreenCustomerMapScreenState extends State<FullScreenCustomerMapScree
                 PolylineLayer(
                   polylines: [
                     Polyline(
-                      points: _roadPoints ?? [storePos, riderPos, destPos],
+                      points: _roadPoints ?? [riderPos, destPos],
                       strokeWidth: 9,
                       color: const Color(0xFF7C3AED).withValues(alpha: 0.28),
                     ),
                     Polyline(
-                      points: _roadPoints ?? [storePos, riderPos, destPos],
+                      points: _roadPoints ?? [riderPos, destPos],
                       strokeWidth: 4.5,
                       color: const Color(0xFF7C3AED),
                     ),
@@ -983,20 +1035,6 @@ class _FullScreenCustomerMapScreenState extends State<FullScreenCustomerMapScree
                 ),
                 MarkerLayer(
                   markers: [
-                    Marker(
-                      point: storePos,
-                      width: 48,
-                      height: 48,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF7C3AED),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white, width: 3),
-                          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3))],
-                        ),
-                        child: const Icon(Icons.storefront_rounded, color: Colors.white, size: 22),
-                      ),
-                    ),
                     Marker(
                       point: riderPos,
                       width: 56,

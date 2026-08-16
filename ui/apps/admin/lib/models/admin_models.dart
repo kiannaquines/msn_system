@@ -10,23 +10,55 @@ extension AdminStatusLabel on AdminOrderStatus {
 }
 
 class AdminStore {
-  const AdminStore({required this.id, required this.name, required this.description, this.available = true, this.items = const []});
+  const AdminStore({
+    required this.id,
+    required this.name,
+    required this.description,
+    this.imageUrl,
+    this.available = true,
+    this.items = const [],
+  });
   final String id;
   final String name;
   final String description;
+  final String? imageUrl;
   final bool available;
   final List<AdminMenuItem> items;
-  AdminStore copyWith({String? name, String? description, bool? available, List<AdminMenuItem>? items}) => AdminStore(id: id, name: name ?? this.name, description: description ?? this.description, available: available ?? this.available, items: items ?? this.items);
+  AdminStore copyWith({String? name, String? description, String? imageUrl, bool? available, List<AdminMenuItem>? items}) =>
+      AdminStore(
+        id: id,
+        name: name ?? this.name,
+        description: description ?? this.description,
+        imageUrl: imageUrl ?? this.imageUrl,
+        available: available ?? this.available,
+        items: items ?? this.items,
+      );
 }
 
 class AdminMenuItem {
-  const AdminMenuItem({required this.id, required this.name, required this.category, required this.price, this.available = true});
+  const AdminMenuItem({
+    required this.id,
+    required this.name,
+    required this.category,
+    required this.price,
+    this.imageUrl,
+    this.available = true,
+  });
   final String id;
   final String name;
   final String category;
   final double price;
+  final String? imageUrl;
   final bool available;
-  AdminMenuItem copyWith({String? name, String? category, double? price, bool? available}) => AdminMenuItem(id: id, name: name ?? this.name, category: category ?? this.category, price: price ?? this.price, available: available ?? this.available);
+  AdminMenuItem copyWith({String? name, String? category, double? price, String? imageUrl, bool? available}) =>
+      AdminMenuItem(
+        id: id,
+        name: name ?? this.name,
+        category: category ?? this.category,
+        price: price ?? this.price,
+        imageUrl: imageUrl ?? this.imageUrl,
+        available: available ?? this.available,
+      );
 }
 
 class AdminOrder {

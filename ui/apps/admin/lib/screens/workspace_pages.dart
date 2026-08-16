@@ -147,9 +147,9 @@ class DashboardPage extends ConsumerWidget {
                 label: 'COD Collected',
                 value: '₱${NumberFormat('#,##0').format(revenue)}',
                 icon: Icons.account_balance_wallet_rounded,
-                color: const Color(0xFFFF6B24),
+                color: const Color(0xFF059669),
                 gradient: const LinearGradient(
-                  colors: [Color(0xFFFF5216), Color(0xFFFF6B24), Color(0xFFFF9233)],
+                  colors: [Color(0xFF059669), Color(0xFF10B981), Color(0xFF34D399)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
@@ -192,19 +192,22 @@ class DashboardPage extends ConsumerWidget {
                               margin: const EdgeInsets.only(bottom: 12),
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFF8F1),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: const Color(0xFFFFEDD5)),
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                boxShadow: const [
+                                  BoxShadow(color: Color(0x08000000), blurRadius: 8, offset: Offset(0, 2)),
+                                ],
                               ),
                               child: Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(10),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFFF6B24).withValues(alpha: 0.15),
+                                      color: const Color(0xFFFEF3C7),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    child: const Icon(Icons.receipt_long_rounded, color: Color(0xFFFF6B24), size: 22),
+                                    child: const Icon(Icons.receipt_long_rounded, color: Color(0xFFD97706), size: 22),
                                   ),
                                   const SizedBox(width: 14),
                                   Expanded(
@@ -244,11 +247,11 @@ class DashboardPage extends ConsumerWidget {
                                         style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF0F172A)),
                                       ),
                                       const SizedBox(height: 6),
-                                      FilledButton.tonal(
+                                      FilledButton(
                                         style: FilledButton.styleFrom(
                                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                           minimumSize: const Size(0, 32),
-                                          backgroundColor: const Color(0xFFFF6B24),
+                                          backgroundColor: const Color(0xFF7C3AED),
                                           foregroundColor: Colors.white,
                                         ),
                                         onPressed: () => showAssignRiderDialog(context, ref, data, order),
@@ -548,7 +551,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                 label: 'Partner Stores',
                 value: '$totalStores Stores',
                 icon: Icons.storefront_rounded,
-                color: const Color(0xFFFF6B24),
+                color: const Color(0xFF7C3AED),
                 subtext: '$openStores Open · ${totalStores - openStores} Closed',
               ),
               _Kpi(
@@ -763,7 +766,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                               decoration: BoxDecoration(
                                 color: store.available
-                                    ? const Color(0xFFFF6B24).withValues(alpha: 0.04)
+                                    ? const Color(0xFFF3E8FF).withValues(alpha: 0.3)
                                     : const Color(0xFFF1F5F9),
                                 borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                                 border: const Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
@@ -771,20 +774,41 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  // Store Icon Avatar
-                                  CircleAvatar(
-                                    radius: 22,
-                                    backgroundColor: store.available
-                                        ? const Color(0xFFFF6B24).withValues(alpha: 0.15)
-                                        : Colors.grey.shade300,
-                                    child: Text(
-                                      store.name.isEmpty ? 'S' : store.name.substring(0, 1).toUpperCase(),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: 18,
-                                        color: store.available ? const Color(0xFFFF6B24) : Colors.black45,
-                                      ),
+                                  // Store Icon Avatar / Image
+                                  Container(
+                                    width: 46,
+                                    height: 46,
+                                    decoration: BoxDecoration(
+                                      color: store.available ? const Color(0xFFF3E8FF) : Colors.grey.shade300,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
                                     ),
+                                    clipBehavior: Clip.antiAlias,
+                                    child: (store.imageUrl != null && store.imageUrl!.isNotEmpty)
+                                        ? Image.network(
+                                            store.imageUrl!,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Center(
+                                              child: Text(
+                                                store.name.isEmpty ? 'S' : store.name.substring(0, 1).toUpperCase(),
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 18,
+                                                  color: store.available ? const Color(0xFF7C3AED) : Colors.black45,
+                                                ),
+                                              ),
+                                            ),
+                                          )
+                                        : Center(
+                                            child: Text(
+                                              store.name.isEmpty ? 'S' : store.name.substring(0, 1).toUpperCase(),
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 18,
+                                                color: store.available ? const Color(0xFF7C3AED) : Colors.black45,
+                                              ),
+                                            ),
+                                          ),
                                   ),
                                   const SizedBox(width: 14),
                                   Expanded(
@@ -888,7 +912,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                                       itemBuilder: (context, index) {
                                         final item = displayItems[index];
                                         return Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                           decoration: BoxDecoration(
                                             color: item.available ? const Color(0xFFF8FAFC) : const Color(0xFFF1F5F9),
                                             borderRadius: BorderRadius.circular(10),
@@ -896,6 +920,29 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                                           ),
                                           child: Row(
                                             children: [
+                                              // Dish Thumbnail Image
+                                              Container(
+                                                width: 36,
+                                                height: 36,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                                                ),
+                                                clipBehavior: Clip.antiAlias,
+                                                child: (item.imageUrl != null && item.imageUrl!.isNotEmpty)
+                                                    ? Image.network(
+                                                        item.imageUrl!,
+                                                        fit: BoxFit.cover,
+                                                        errorBuilder: (_, __, ___) => const Center(
+                                                          child: Icon(Icons.restaurant_rounded, size: 18, color: Color(0xFF7C3AED)),
+                                                        ),
+                                                      )
+                                                    : const Center(
+                                                        child: Icon(Icons.restaurant_rounded, size: 18, color: Color(0xFF7C3AED)),
+                                                      ),
+                                              ),
+                                              const SizedBox(width: 10),
                                               Expanded(
                                                 child: Column(
                                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1016,84 +1063,198 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
   Future<void> _editStore(BuildContext context, WidgetRef ref, [AdminStore? current]) async {
     final name = TextEditingController(text: current?.name);
     final description = TextEditingController(text: current?.description);
+    final imageUrl = TextEditingController(text: current?.imageUrl);
+    bool isAvailable = current?.available ?? true;
+
+    final storePresets = [
+      const _ImagePreset(
+        label: 'Grill & BBQ',
+        url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.local_fire_department_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Fast Food',
+        url: 'https://images.unsplash.com/photo-1586816001966-79b736744398?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.fastfood_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Asian & Wok',
+        url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.ramen_dining_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Cafe & Bakery',
+        url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.coffee_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Milk Tea & Drinks',
+        url: 'https://images.unsplash.com/photo-1558857563-b37cf5a26a8d?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.bubble_chart_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Seafood Bistro',
+        url: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.set_meal_rounded,
+      ),
+    ];
+
     await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF6B24).withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Icon(Icons.storefront_rounded, color: Color(0xFFFF6B24), size: 22),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                current == null ? 'Add Store Partner' : 'Edit Store Details',
-                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: 460,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Row(
             children: [
-              TextField(
-                controller: name,
-                decoration: const InputDecoration(
-                  labelText: 'Store Name',
-                  hintText: 'e.g. Mang Inasal - Davao Downtown',
-                  prefixIcon: Icon(Icons.business_rounded, size: 20),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3E8FF),
+                  borderRadius: BorderRadius.circular(10),
                 ),
+                child: const Icon(Icons.storefront_rounded, color: Color(0xFF7C3AED), size: 22),
               ),
-              const SizedBox(height: 14),
-              TextField(
-                controller: description,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Store Description',
-                  hintText: 'e.g. Authentic charcoal grilled chicken and Filipino favorites.',
-                  prefixIcon: Icon(Icons.description_outlined, size: 20),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  current == null ? 'Add Store Partner' : 'Edit Store Details',
+                  style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
                 ),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          FilledButton.icon(
-            onPressed: () async {
-              if (name.text.trim().isEmpty) return;
-              await ref.read(adminProvider.notifier).saveStore(AdminStore(
-                    id: current?.id ?? 'new-store-${DateTime.now().millisecondsSinceEpoch}',
-                    name: name.text.trim(),
-                    description: description.text.trim(),
-                    available: current?.available ?? true,
-                    items: current?.items ?? const [],
-                  ));
-              if (context.mounted) Navigator.pop(context);
-            },
-            icon: const Icon(Icons.check_rounded, size: 16),
-            label: const Text('Save Store'),
+          content: SizedBox(
+            width: 500,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextField(
+                    controller: name,
+                    decoration: const InputDecoration(
+                      labelText: 'Store Name',
+                      hintText: 'e.g. Mang Inasal - Davao Downtown',
+                      prefixIcon: Icon(Icons.business_rounded, size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: description,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Store Description',
+                      hintText: 'e.g. Authentic charcoal grilled chicken and Filipino favorites.',
+                      prefixIcon: Icon(Icons.description_outlined, size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  _ImageUploadPickerField(
+                    controller: imageUrl,
+                    label: 'Store Cover / Logo Image',
+                    presets: storePresets,
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Store Open & Accepting Orders', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                      subtitle: Text(
+                        isAvailable ? 'Store is open and accepting new customer orders' : 'Store is closed / temporarily offline',
+                        style: TextStyle(fontSize: 11, color: isAvailable ? const Color(0xFF10B981) : const Color(0xFF64748B), fontWeight: FontWeight.w600),
+                      ),
+                      value: isAvailable,
+                      activeThumbColor: const Color(0xFF10B981),
+                      activeTrackColor: const Color(0xFFA7F3D0),
+                      onChanged: (val) => setState(() => isAvailable = val),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ],
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+            FilledButton.icon(
+              onPressed: () async {
+                if (name.text.trim().isEmpty) return;
+                final image = imageUrl.text.trim().isEmpty ? null : imageUrl.text.trim();
+                await ref.read(adminProvider.notifier).saveStore(AdminStore(
+                      id: current?.id ?? 'new-store-${DateTime.now().millisecondsSinceEpoch}',
+                      name: name.text.trim(),
+                      description: description.text.trim(),
+                      imageUrl: image,
+                      available: isAvailable,
+                      items: current?.items ?? const [],
+                    ));
+                if (context.mounted) Navigator.pop(context);
+              },
+              icon: const Icon(Icons.check_rounded, size: 16),
+              label: const Text('Save Store'),
+            ),
+          ],
+        ),
       ),
     );
     name.dispose();
     description.dispose();
+    imageUrl.dispose();
   }
 
   Future<void> _editMenuItem(BuildContext context, WidgetRef ref, AdminStore store, [AdminMenuItem? current]) async {
     final name = TextEditingController(text: current?.name);
     String selectedCategory = current?.category ?? 'Chicken & Inasal';
     final price = TextEditingController(text: current != null ? current.price.toStringAsFixed(0) : '');
+    final imageUrl = TextEditingController(text: current?.imageUrl);
     bool isAvailable = current?.available ?? true;
+
+    final dishPresets = [
+      const _ImagePreset(
+        label: 'Chicken Inasal',
+        url: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.restaurant_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Crispy Pata',
+        url: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.dinner_dining_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Pork BBQ',
+        url: 'https://images.unsplash.com/photo-1529193591184-b1d58069ecdd?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.kebab_dining_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Sinigang / Soup',
+        url: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.soup_kitchen_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Silog Breakfast',
+        url: 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.egg_alt_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Pancit Canton',
+        url: 'https://images.unsplash.com/photo-1612927601601-6638404737ce?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.ramen_dining_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Halo-Halo / Dessert',
+        url: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.icecream_rounded,
+      ),
+      const _ImagePreset(
+        label: 'Milk Tea & Drink',
+        url: 'https://images.unsplash.com/photo-1558857563-b37cf5a26a8d?w=600&auto=format&fit=crop&q=80',
+        icon: Icons.local_drink_rounded,
+      ),
+    ];
 
     final predefinedCategories = [
       'Chicken & Inasal',
@@ -1119,10 +1280,10 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFF6B24).withValues(alpha: 0.12),
+                  color: const Color(0xFFF3E8FF),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.restaurant_menu_rounded, color: Color(0xFFFF6B24), size: 22),
+                child: const Icon(Icons.restaurant_menu_rounded, color: Color(0xFF7C3AED), size: 22),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -1134,58 +1295,66 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
             ],
           ),
           content: SizedBox(
-            width: 460,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: name,
-                  decoration: const InputDecoration(
-                    labelText: 'Dish Name',
-                    hintText: 'e.g. Chicken Inasal Pecho Large',
-                    prefixIcon: Icon(Icons.fastfood_rounded, size: 20),
+            width: 500,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: name,
+                    decoration: const InputDecoration(
+                      labelText: 'Dish Name',
+                      hintText: 'e.g. Chicken Inasal Pecho Large',
+                      prefixIcon: Icon(Icons.fastfood_rounded, size: 20),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                DropdownButtonFormField<String>(
-                  initialValue: selectedCategory,
-                  decoration: const InputDecoration(
-                    labelText: 'Food Category',
-                    prefixIcon: Icon(Icons.category_rounded, size: 20),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<String>(
+                    initialValue: selectedCategory,
+                    decoration: const InputDecoration(
+                      labelText: 'Food Category',
+                      prefixIcon: Icon(Icons.category_rounded, size: 20),
+                    ),
+                    items: predefinedCategories
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
+                    onChanged: (val) => setState(() => selectedCategory = val!),
                   ),
-                  items: predefinedCategories
-                      .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                      .toList(),
-                  onChanged: (val) => setState(() => selectedCategory = val!),
-                ),
-                const SizedBox(height: 14),
-                TextField(
-                  controller: price,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                    labelText: 'Price in Philippine Peso (PHP)',
-                    prefixText: '₱ ',
-                    hintText: '185',
-                    prefixIcon: Icon(Icons.payments_outlined, size: 20),
+                  const SizedBox(height: 14),
+                  TextField(
+                    controller: price,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Price in Philippine Peso (PHP)',
+                      prefixText: '₱ ',
+                      hintText: '185',
+                      prefixIcon: Icon(Icons.payments_outlined, size: 20),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 14),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  const SizedBox(height: 14),
+                  _ImageUploadPickerField(
+                    controller: imageUrl,
+                    label: 'Dish Photography Image',
+                    presets: dishPresets,
                   ),
-                  child: SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Available for Ordering', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                    subtitle: Text(isAvailable ? 'Customers can order this dish now' : 'Marked as Sold Out', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                    value: isAvailable,
-                    onChanged: (val) => setState(() => isAvailable = val),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF8FAFC),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Available for Ordering', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                      subtitle: Text(isAvailable ? 'Customers can order this dish now' : 'Marked as Sold Out', style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
+                      value: isAvailable,
+                      onChanged: (val) => setState(() => isAvailable = val),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: [
@@ -1194,6 +1363,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
               onPressed: () async {
                 final amount = double.tryParse(price.text);
                 if (name.text.trim().isEmpty || amount == null) return;
+                final image = imageUrl.text.trim().isEmpty ? null : imageUrl.text.trim();
                 await ref.read(adminProvider.notifier).saveMenuItem(
                       store.id,
                       AdminMenuItem(
@@ -1201,6 +1371,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                         name: name.text.trim(),
                         category: selectedCategory,
                         price: amount,
+                        imageUrl: image,
                         available: isAvailable,
                       ),
                     );
@@ -1215,10 +1386,11 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
     );
     name.dispose();
     price.dispose();
+    imageUrl.dispose();
   }
 
   Future<void> _removeStore(BuildContext context, WidgetRef ref, AdminStore store) async {
-    final reason = TextEditingController();
+    final reason = TextEditingController(text: 'Store partnership terminated / closed');
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -1260,7 +1432,7 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
                     SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Removing a store partner requires a mandatory audit reason per system compliance rules.',
+                        'Removing this store will deactivate it, remove it from customer catalogs, and record an audit entry.',
                         style: TextStyle(color: Color(0xFF991B1B), fontSize: 12),
                       ),
                     ),
@@ -1284,9 +1456,17 @@ class _CatalogPageState extends ConsumerState<CatalogPage> {
           FilledButton.icon(
             style: FilledButton.styleFrom(backgroundColor: const Color(0xFFEF4444)),
             onPressed: () async {
-              if (reason.text.trim().isEmpty) return;
-              await ref.read(adminProvider.notifier).removeStore(store, reason.text.trim());
-              if (context.mounted) Navigator.pop(context);
+              final auditReason = reason.text.trim().isNotEmpty ? reason.text.trim() : 'Store partnership terminated / closed';
+              Navigator.pop(context);
+              await ref.read(adminProvider.notifier).removeStore(store, auditReason);
+              if (context.mounted) {
+                MnsSnackBar.show(
+                  context,
+                  title: 'Store Removed',
+                  message: 'Store "${store.name}" was removed from the active catalog.',
+                  type: MnsSnackBarType.info,
+                );
+              }
             },
             icon: const Icon(Icons.delete_forever_rounded, size: 16),
             label: const Text('Confirm Remove'),
@@ -1315,10 +1495,10 @@ Future<void> showAssignRiderDialog(BuildContext context, WidgetRef ref, AdminSna
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B24).withValues(alpha: 0.12),
+                color: const Color(0xFFF3E8FF),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.two_wheeler_rounded, color: Color(0xFFFF6B24), size: 22),
+              child: const Icon(Icons.two_wheeler_rounded, color: Color(0xFF7C3AED), size: 22),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -1391,7 +1571,7 @@ Future<void> showAssignRiderDialog(BuildContext context, WidgetRef ref, AdminSna
                   MnsSnackBar.show(
                     context,
                     title: 'Assignment Failed',
-                    message: msg.contains('409') || msg.contains('active') ? '${selected.name} already has an active delivery in Kabacan.' : msg,
+                    message: msg.contains('409') || msg.contains('active') ? '${selected.name} already has an active delivery in progress.' : msg,
                     type: MnsSnackBarType.error,
                   );
                 }
@@ -1784,7 +1964,7 @@ class _OrdersPageState extends ConsumerState<OrdersPage> {
                 value: '$inTransit',
                 icon: Icons.two_wheeler_rounded,
                 color: const Color(0xFF2563EB),
-                subtext: 'Couriers delivering across Kabacan',
+                subtext: 'Couriers delivering across active zones',
               ),
               _Kpi(
                 label: 'Settled COD Sales',
@@ -2370,8 +2550,8 @@ class _EditRiderDialogState extends State<_EditRiderDialog> with SingleTickerPro
     _tabController = TabController(length: 3, vsync: this);
     _name = TextEditingController(text: widget.rider.name);
     _phone = TextEditingController(text: widget.rider.phone);
-    _vehicleModel = TextEditingController(text: 'Honda Click 125i (2024)');
-    _plateNumber = TextEditingController(text: 'DAV-842');
+    _vehicleModel = TextEditingController();
+    _plateNumber = TextEditingController();
     _status = widget.rider.status;
   }
 
@@ -2725,19 +2905,19 @@ class _CreateRiderDialogState extends State<_CreateRiderDialog> with SingleTicke
   final _phone = TextEditingController();
   final _emergencyContact = TextEditingController();
   final _password = TextEditingController();
-  final _vehicleModel = TextEditingController(text: 'Honda Click 125i (2024)');
-  final _plateNumber = TextEditingController(text: 'DAV-842');
+  final _vehicleModel = TextEditingController();
+  final _plateNumber = TextEditingController();
 
   String _vehicleType = 'Motorcycle';
-  String _hub = 'Davao Toril Hub';
-  String _shiftSlot = 'Morning Shift (6:00 AM - 2:00 PM)';
+  String _hub = 'Central Operations Hub';
+  String _shiftSlot = 'Full Shift (7:00 AM - 7:00 PM)';
   bool _isOnlineOnCreate = true;
 
   // Document Upload States
-  String? _licenseFile = 'drivers_license_card.jpg';
-  String? _orCrFile = 'vehicle_or_cr_reg.pdf';
-  String? _clearanceFile = 'nbi_barangay_clearance.pdf';
-  String? _photoIdFile = 'courier_formal_2x2.jpg';
+  String? _licenseFile;
+  String? _orCrFile;
+  String? _clearanceFile;
+  String? _photoIdFile;
   bool _isSaving = false;
 
   @override
@@ -3114,6 +3294,170 @@ class _CreateRiderDialogState extends State<_CreateRiderDialog> with SingleTicke
   }
 }
 
+class _ImagePreset {
+  const _ImagePreset({required this.label, required this.url, required this.icon});
+  final String label;
+  final String url;
+  final IconData icon;
+}
+
+class _ImageUploadPickerField extends StatefulWidget {
+  const _ImageUploadPickerField({
+    required this.controller,
+    required this.label,
+    required this.presets,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final List<_ImagePreset> presets;
+
+  @override
+  State<_ImageUploadPickerField> createState() => _ImageUploadPickerFieldState();
+}
+
+class _ImageUploadPickerFieldState extends State<_ImageUploadPickerField> {
+  @override
+  Widget build(BuildContext context) {
+    final currentUrl = widget.controller.text.trim();
+    final hasImage = currentUrl.isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.image_outlined, size: 18, color: Color(0xFF7C3AED)),
+              const SizedBox(width: 8),
+              Text(widget.label, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF0F172A))),
+              const Spacer(),
+              if (hasImage)
+                InkWell(
+                  onTap: () {
+                    widget.controller.clear();
+                    setState(() {});
+                  },
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.close_rounded, size: 14, color: Color(0xFFEF4444)),
+                      SizedBox(width: 2),
+                      Text('Remove', style: TextStyle(color: Color(0xFFEF4444), fontSize: 11, fontWeight: FontWeight.w800)),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Preview & URL input row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Image Preview Thumbnail
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: hasImage
+                    ? Image.network(
+                        currentUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Center(
+                          child: Icon(Icons.broken_image_outlined, color: Colors.grey, size: 24),
+                        ),
+                      )
+                    : const Center(
+                        child: Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF94A3B8), size: 24),
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: widget.controller,
+                      onChanged: (_) => setState(() {}),
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        labelText: 'Image Web URL',
+                        hintText: 'https://images.unsplash.com/...',
+                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Provide image link or tap a preset suggestion',
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 10.5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Quick Presets Wrap
+          const Text('Curated Presets / Suggestions:', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF64748B))),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: widget.presets.map((preset) {
+              final isSelected = currentUrl == preset.url;
+              return InkWell(
+                onTap: () {
+                  widget.controller.text = preset.url;
+                  setState(() {});
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFFF3E8FF) : Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFF7C3AED) : const Color(0xFFCBD5E1),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(preset.icon, size: 13, color: isSelected ? const Color(0xFF7C3AED) : const Color(0xFF475569)),
+                      const SizedBox(width: 4),
+                      Text(
+                        preset.label,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                          color: isSelected ? const Color(0xFF7C3AED) : const Color(0xFF334155),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _UploadDocumentCard extends StatelessWidget {
   const _UploadDocumentCard({
     required this.title,
@@ -3198,7 +3542,8 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
   late final AnimationController _routeAnimController;
   Timer? _telemetryTimer;
   String? _selectedDeliveryId;
-  List<LatLng>? _roadRoutePoints;
+  List<LatLng>? _historyRoutePoints;
+  List<LatLng>? _activeDirectionPoints;
   String? _loadedRoadDeliveryId;
   bool _isDrawerOpen = true;
   String _searchQuery = '';
@@ -3211,9 +3556,8 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
     _mapController = MapController();
     _routeAnimController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2400),
+      duration: const Duration(milliseconds: 3200),
     )..repeat();
-    // Auto-refresh rider locations every 3 seconds
     _telemetryTimer = Timer.periodic(const Duration(seconds: 3), (_) => _pollTelemetry());
   }
 
@@ -3274,22 +3618,18 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
       return LatLng(delivery.pickupLatitude!, delivery.pickupLongitude!);
     }
     final name = delivery.storeName.toLowerCase();
-    if (name.contains('penong')) return const LatLng(7.0235, 125.5015);
-    if (name.contains('jollibee')) return const LatLng(7.0205, 125.4972);
-    if (name.contains('inasal')) return const LatLng(7.0212, 125.4988);
-    if (name.contains('kusina') || name.contains('dabaw')) return const LatLng(7.0195, 125.4995);
-    if (name.contains('balamban') || name.contains('liempo')) return const LatLng(7.0188, 125.4965);
-    if (name.contains('chowking')) return const LatLng(7.0208, 125.4978);
-    if (name.contains('kapewe') || name.contains('cafe')) return const LatLng(7.0175, 125.5030);
-    if (name.contains('dencia')) return const LatLng(7.0220, 125.5020);
-    return const LatLng(7.0210, 125.4990);
+    if (name.contains('penong')) return const LatLng(7.1125, 124.8285);
+    if (name.contains('jollibee')) return const LatLng(7.1090, 124.8240);
+    if (name.contains('inasal')) return const LatLng(7.1085, 124.8250);
+    if (name.contains('chowking')) return const LatLng(7.1075, 124.8230);
+    return const LatLng(7.1086, 124.8235);
   }
 
   LatLng _getDestPos(LiveDelivery delivery) {
     if (delivery.destinationLatitude != null && delivery.destinationLongitude != null && delivery.destinationLatitude != 0) {
       return LatLng(delivery.destinationLatitude!, delivery.destinationLongitude!);
     }
-    return const LatLng(7.0245, 125.5035);
+    return const LatLng(7.1066, 124.8292);
   }
 
   LatLng _getRiderPos(LiveDelivery delivery) {
@@ -3299,15 +3639,16 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
     final pickup = _getPickupPos(delivery);
     final dest = _getDestPos(delivery);
     return LatLng(
-      (pickup.latitude + dest.latitude) / 2 + 0.0008,
-      (pickup.longitude + dest.longitude) / 2 - 0.0005,
+      (pickup.latitude + dest.latitude) / 2 + 0.0004,
+      (pickup.longitude + dest.longitude) / 2 - 0.0003,
     );
   }
 
   void _focusDelivery(LiveDelivery delivery) {
     setState(() {
       _selectedDeliveryId = delivery.id;
-      _roadRoutePoints = null;
+      _historyRoutePoints = null;
+      _activeDirectionPoints = null;
       _loadedRoadDeliveryId = null;
     });
     final pickup = _getPickupPos(delivery);
@@ -3326,7 +3667,7 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
       if (p.longitude > maxLng) maxLng = p.longitude;
     }
     final center = LatLng((minLat + maxLat) / 2, (minLng + maxLng) / 2);
-    _mapController.move(center, 14.3);
+    _mapController.move(center, 14.5);
 
     _fetchRoadRoute(delivery);
   }
@@ -3339,19 +3680,41 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
     final rider = _getRiderPos(delivery);
     const mapboxToken = String.fromEnvironment('MAPBOX_PUBLIC_TOKEN');
 
-    const RoadRouteService().getRoutePoints(
-      origin: pickup,
-      waypoint: rider,
-      destination: dest,
-      mapboxToken: mapboxToken,
-    ).then((points) {
-      if (mounted && _selectedDeliveryId == delivery.id) {
-        setState(() => _roadRoutePoints = points);
-      }
-    });
+    if (delivery.status == AdminOrderStatus.onTheWay || delivery.status == AdminOrderStatus.pickedUp) {
+      const RoadRouteService().getRoutePoints(
+        origin: pickup,
+        destination: rider,
+        mapboxToken: mapboxToken,
+      ).then((points) {
+        if (mounted && _selectedDeliveryId == delivery.id) {
+          setState(() => _historyRoutePoints = points);
+        }
+      });
+
+      const RoadRouteService().getRoutePoints(
+        origin: rider,
+        destination: dest,
+        mapboxToken: mapboxToken,
+      ).then((points) {
+        if (mounted && _selectedDeliveryId == delivery.id) {
+          setState(() => _activeDirectionPoints = points);
+        }
+      });
+    } else {
+      const RoadRouteService().getRoutePoints(
+        origin: rider,
+        destination: pickup,
+        mapboxToken: mapboxToken,
+      ).then((points) {
+        if (mounted && _selectedDeliveryId == delivery.id) {
+          setState(() {
+            _historyRoutePoints = null;
+            _activeDirectionPoints = points;
+          });
+        }
+      });
+    }
   }
-
-
 
   void _fitAllRiders(List<LiveDelivery> deliveries) {
     final valid = deliveries.where((d) => d.latitude != 0 && d.longitude != 0).toList();
@@ -3374,7 +3737,7 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
       if (d.longitude > maxLng) maxLng = d.longitude;
     }
     final center = LatLng((minLat + maxLat) / 2, (minLng + maxLng) / 2);
-    _mapController.move(center, 13.0);
+    _mapController.move(center, 13.5);
   }
 
   @override
@@ -3406,7 +3769,6 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
 
     final pickupPos = selectedDelivery != null ? _getPickupPos(selectedDelivery) : null;
     final destPos = selectedDelivery != null ? _getDestPos(selectedDelivery) : null;
-    final riderPos = selectedDelivery != null ? _getRiderPos(selectedDelivery) : null;
 
     if (selectedDelivery != null && _loadedRoadDeliveryId != selectedDelivery.id) {
       _fetchRoadRoute(selectedDelivery);
@@ -3415,27 +3777,22 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
     return SizedBox.expand(
       child: Stack(
         children: [
-          // 1. Full-Screen Interactive Map Canvas
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _routeAnimController,
               builder: (context, _) {
-                final routePoints = (selectedDelivery != null && pickupPos != null && riderPos != null && destPos != null)
-                    ? (_roadRoutePoints ?? [pickupPos, riderPos, destPos])
-                    : null;
+                final glowPulsingWidth = 8.0 + 3.0 * math.sin(_routeAnimController.value * 2 * math.pi).abs();
+                final glowPulsingAlpha = 0.22 + 0.15 * math.sin(_routeAnimController.value * 2 * math.pi).abs();
 
-                final pulse1 = routePoints != null ? _interpolatePoint(routePoints, _routeAnimController.value) : null;
-                final pulse2 = routePoints != null ? _interpolatePoint(routePoints, (_routeAnimController.value + 0.33) % 1.0) : null;
-                final pulse3 = routePoints != null ? _interpolatePoint(routePoints, (_routeAnimController.value + 0.66) % 1.0) : null;
-                final pulse4 = routePoints != null ? _interpolatePoint(routePoints, (_routeAnimController.value + 0.50) % 1.0) : null;
-                final glowPulsingWidth = 8.0 + 4.0 * math.sin(_routeAnimController.value * 2 * math.pi).abs();
-                final glowPulsingAlpha = 0.22 + 0.18 * math.sin(_routeAnimController.value * 2 * math.pi).abs();
+                final movingActivePoint = (_activeDirectionPoints != null && _activeDirectionPoints!.isNotEmpty)
+                    ? _interpolatePoint(_activeDirectionPoints!, _routeAnimController.value)
+                    : null;
 
                 return FlutterMap(
                   mapController: _mapController,
                   options: MapOptions(
                     initialCenter: center,
-                    initialZoom: 13.5,
+                    initialZoom: 14.0,
                     interactionOptions: const InteractionOptions(
                       flags: InteractiveFlag.all,
                     ),
@@ -3449,17 +3806,27 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                       userAgentPackageName: 'com.mns.delivery.admin',
                     ),
 
-                    // Animated Glowing Selected Delivery Route
-                    if (routePoints != null)
+                    if (_historyRoutePoints != null && _historyRoutePoints!.isNotEmpty)
                       PolylineLayer(
                         polylines: [
                           Polyline(
-                            points: routePoints,
+                            points: _historyRoutePoints!,
+                            strokeWidth: 3.5,
+                            color: const Color(0xFF64748B).withValues(alpha: 0.55),
+                          ),
+                        ],
+                      ),
+
+                    if (_activeDirectionPoints != null && _activeDirectionPoints!.isNotEmpty)
+                      PolylineLayer(
+                        polylines: [
+                          Polyline(
+                            points: _activeDirectionPoints!,
                             strokeWidth: glowPulsingWidth,
                             color: const Color(0xFF7C3AED).withValues(alpha: glowPulsingAlpha),
                           ),
                           Polyline(
-                            points: routePoints,
+                            points: _activeDirectionPoints!,
                             strokeWidth: 4.5,
                             color: const Color(0xFF7C3AED),
                           ),
@@ -3468,234 +3835,218 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
 
                     MarkerLayer(
                       markers: [
-                        // Flowing Animated Waypoint Energy Pulses
-                        if (pulse1 != null && pulse2 != null && pulse3 != null && pulse4 != null) ...[
-                          for (final pulse in [pulse1, pulse2, pulse3, pulse4])
-                            Marker(
-                              point: pulse,
-                              width: 18,
-                              height: 18,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF7C3AED).withValues(alpha: 0.85),
-                                      blurRadius: 10,
-                                      spreadRadius: 2.5,
-                                    ),
-                                  ],
-                                  border: Border.all(color: const Color(0xFF7C3AED), width: 2),
-                                ),
-                                child: Center(
-                                  child: Container(
-                                    width: 6,
-                                    height: 6,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF7C3AED),
-                                      shape: BoxShape.circle,
-                                    ),
+                        if (movingActivePoint != null)
+                          Marker(
+                            point: movingActivePoint,
+                            width: 32,
+                            height: 32,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF7C3AED),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2.5),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Color(0x777C3AED),
+                                    blurRadius: 10,
+                                    spreadRadius: 2,
                                   ),
-                                ),
+                                ],
                               ),
+                              child: const Icon(Icons.two_wheeler_rounded, color: Colors.white, size: 16),
                             ),
-                        ],
-                    // All Active Rider Markers
-                    ...positioned.map((delivery) {
-                      final isSelected = delivery.id == _selectedDeliveryId;
-                      final isStale = delivery.stale;
-                      final markerColor = isStale
-                          ? const Color(0xFFEF4444)
-                          : (isSelected ? const Color(0xFFFF6B24) : const Color(0xFF7C3AED));
-
-                      return Marker(
-                        point: LatLng(delivery.latitude, delivery.longitude),
-                        width: 140,
-                        height: 72,
-                        child: GestureDetector(
-                          onTap: () => _focusDelivery(delivery),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Live Rider Avatar Pin
-                              Container(
-                                padding: const EdgeInsets.all(3),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: markerColor.withValues(alpha: 0.35),
-                                      blurRadius: 12,
-                                      spreadRadius: 3,
-                                    ),
-                                  ],
-                                  border: Border.all(color: markerColor, width: 2.5),
-                                ),
-                                child: CircleAvatar(
-                                  radius: 16,
-                                  backgroundColor: markerColor,
-                                  child: const Icon(
-                                    Icons.delivery_dining_rounded,
-                                    color: Colors.white,
-                                    size: 18,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              // Callout Badge Label
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0F172A),
-                                  borderRadius: BorderRadius.circular(8),
-                                  boxShadow: const [
-                                    BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
-                                  ],
-                                ),
-                                child: Text(
-                                  delivery.rider,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ),
-                            ],
                           ),
-                        ),
-                      );
-                    }),
 
-                    // Store Marker for Selected Delivery
-                    if (selectedDelivery != null && pickupPos != null)
-                      Marker(
-                        point: pickupPos,
-                        width: 150,
-                        height: 72,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF7C3AED).withValues(alpha: 0.4),
-                                    blurRadius: 12,
-                                    spreadRadius: 3,
+                        ...positioned.map((delivery) {
+                          final isSelected = delivery.id == _selectedDeliveryId;
+                          final isStale = delivery.stale;
+                          final markerColor = isStale
+                              ? const Color(0xFFEF4444)
+                              : (isSelected ? const Color(0xFF7C3AED) : const Color(0xFF059669));
+
+                          return Marker(
+                            point: LatLng(delivery.latitude, delivery.longitude),
+                            width: 140,
+                            height: 72,
+                            child: GestureDetector(
+                              onTap: () => _focusDelivery(delivery),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: markerColor.withValues(alpha: 0.35),
+                                          blurRadius: 12,
+                                          spreadRadius: 3,
+                                        ),
+                                      ],
+                                      border: Border.all(color: markerColor, width: 2.5),
+                                    ),
+                                    child: CircleAvatar(
+                                      radius: 16,
+                                      backgroundColor: markerColor,
+                                      child: const Icon(
+                                        Icons.delivery_dining_rounded,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                                      boxShadow: const [
+                                        BoxShadow(color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2)),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      delivery.rider,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        color: Color(0xFF0F172A),
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 10,
+                                      ),
+                                    ),
                                   ),
                                 ],
-                                border: Border.all(color: const Color(0xFF7C3AED), width: 2.5),
-                              ),
-                              child: const CircleAvatar(
-                                radius: 16,
-                                backgroundColor: Color(0xFF7C3AED),
-                                child: Icon(Icons.storefront_rounded, color: Colors.white, size: 18),
                               ),
                             ),
-                            const SizedBox(height: 3),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E142F),
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
-                              ),
-                              child: Text(
-                                selectedDelivery.storeName.isNotEmpty ? selectedDelivery.storeName : 'Pickup Store',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 10),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                          );
+                        }),
 
-                    // Destination Marker for Selected Delivery
-                    if (selectedDelivery != null && destPos != null)
-                      Marker(
-                        point: destPos,
-                        width: 170,
-                        height: 72,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF10B981).withValues(alpha: 0.45),
-                                    blurRadius: 12,
-                                    spreadRadius: 3,
+                        if (selectedDelivery != null && pickupPos != null)
+                          Marker(
+                            point: pickupPos,
+                            width: 150,
+                            height: 72,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF7C3AED).withValues(alpha: 0.4),
+                                        blurRadius: 12,
+                                        spreadRadius: 3,
+                                      ),
+                                    ],
+                                    border: Border.all(color: const Color(0xFF7C3AED), width: 2.5),
                                   ),
-                                ],
-                                border: Border.all(color: const Color(0xFF10B981), width: 2.5),
-                              ),
-                              child: const CircleAvatar(
-                                radius: 16,
-                                backgroundColor: Color(0xFF10B981),
-                                child: Icon(Icons.home_rounded, color: Colors.white, size: 18),
-                              ),
+                                  child: const CircleAvatar(
+                                    radius: 16,
+                                    backgroundColor: Color(0xFF7C3AED),
+                                    child: Icon(Icons.storefront_rounded, color: Colors.white, size: 18),
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                    boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2))],
+                                  ),
+                                  child: Text(
+                                    selectedDelivery.storeName.isNotEmpty ? selectedDelivery.storeName : 'Pickup Store',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(color: Color(0xFF7C3AED), fontWeight: FontWeight.w900, fontSize: 10),
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 3),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF065F46),
-                                borderRadius: BorderRadius.circular(8),
-                                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
-                              ),
-                              child: Text(
-                                'Destination: ${selectedDelivery.customer}',
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 10),
-                              ),
+                          ),
+
+                        if (selectedDelivery != null && destPos != null)
+                          Marker(
+                            point: destPos,
+                            width: 170,
+                            height: 72,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF10B981).withValues(alpha: 0.45),
+                                        blurRadius: 12,
+                                        spreadRadius: 3,
+                                      ),
+                                    ],
+                                    border: Border.all(color: const Color(0xFF10B981), width: 2.5),
+                                  ),
+                                  child: const CircleAvatar(
+                                    radius: 16,
+                                    backgroundColor: Color(0xFF10B981),
+                                    child: Icon(Icons.home_rounded, color: Colors.white, size: 18),
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                                    boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 6, offset: Offset(0, 2))],
+                                  ),
+                                  child: Text(
+                                    'Drop-off: ${selectedDelivery.customer}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(color: Color(0xFF059669), fontWeight: FontWeight.w900, fontSize: 10),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                      ],
+                    ),
                   ],
-                ),
-              ],
-            );
-          },
-        ),
-      ),
+                );
+              },
+            ),
+          ),
 
-          // 2. Top Floating Navigation & Telemetry HUD Bar
           Positioned(
             top: 20,
             left: 20,
             right: 20,
             child: Row(
               children: [
-                // Realtime Radar Status Banner
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.95),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                     boxShadow: const [
-                      BoxShadow(color: Color(0x14000000), blurRadius: 18, offset: Offset(0, 4)),
+                      BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 4)),
                     ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Pulsing green beacon dot
                       Container(
                         width: 10,
                         height: 10,
@@ -3726,8 +4077,8 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                             ),
                           ),
                           Text(
-                            '${positioned.length} Active Riders · Real-time auto sync',
-                            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                            '${positioned.length} Active Riders · Live GPS & Direction Stream',
+                            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w600),
                           ),
                         ],
                       ),
@@ -3736,49 +4087,47 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                 ),
                 const Spacer(),
 
-                // Map & Dispatch Control Actions
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.95),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                     boxShadow: const [
-                      BoxShadow(color: Color(0x14000000), blurRadius: 18, offset: Offset(0, 4)),
+                      BoxShadow(color: Color(0x12000000), blurRadius: 16, offset: Offset(0, 4)),
                     ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Fit All Riders Action
                       IconButton(
                         tooltip: 'Fit All Riders on Screen',
                         icon: const Icon(Icons.center_focus_strong_rounded, size: 20, color: Color(0xFF0F172A)),
                         onPressed: () => _fitAllRiders(allDeliveries),
                       ),
                       const SizedBox(width: 4),
-                      // Manual Sync
                       IconButton(
                         tooltip: 'Sync GPS Telemetry Now',
                         icon: _isSyncing
                             ? const SizedBox(
                                 width: 18,
                                 height: 18,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFF6B24)),
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF7C3AED)),
                               )
-                            : const Icon(Icons.refresh_rounded, size: 20, color: Color(0xFF0F172A)),
+                            : const Icon(Icons.refresh_rounded, size: 20, color: Color(0xFF7C3AED)),
                         onPressed: _isSyncing ? null : _manualSync,
                       ),
                       const SizedBox(width: 4),
-                      // Toggle Dispatch Roster Drawer
-                      FilledButton.tonalIcon(
+                      FilledButton.icon(
                         style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF7C3AED),
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         ),
                         onPressed: () => setState(() => _isDrawerOpen = !_isDrawerOpen),
                         icon: Icon(_isDrawerOpen ? Icons.view_sidebar_rounded : Icons.view_sidebar_outlined, size: 18),
-                        label: Text(_isDrawerOpen ? 'Hide Fleet Roster' : 'Show Fleet Roster (${filteredDeliveries.length})'),
+                        label: Text(_isDrawerOpen ? 'Hide Roster' : 'Show Roster (${filteredDeliveries.length})', style: const TextStyle(fontWeight: FontWeight.w800)),
                       ),
                     ],
                   ),
@@ -3787,16 +4136,15 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
             ),
           ),
 
-          // 3. Floating Left Fleet Roster Overlay Drawer
           if (_isDrawerOpen)
             Positioned(
               top: 88,
               left: 20,
               bottom: 20,
-              width: 360,
+              width: 370,
               child: Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.96),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: const Color(0xFFE2E8F0)),
                   boxShadow: const [
@@ -3807,7 +4155,6 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Drawer Header
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -3821,12 +4168,12 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFF6B24).withValues(alpha: 0.12),
+                                color: const Color(0xFFF3E8FF),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(
                                 '${filteredDeliveries.length}',
-                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Color(0xFFFF6B24)),
+                                style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11, color: Color(0xFF7C3AED)),
                               ),
                             ),
                           ],
@@ -3839,7 +4186,6 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                     ),
                     const SizedBox(height: 12),
 
-                    // Search Input Box
                     TextField(
                       onChanged: (val) => setState(() => _searchQuery = val),
                       decoration: InputDecoration(
@@ -3862,7 +4208,6 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                     ),
                     const SizedBox(height: 12),
 
-                    // Filter Chips (All, On The Way, Picked Up)
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -3921,7 +4266,6 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                     const Divider(height: 1, color: Color(0xFFF1F5F9)),
                     const SizedBox(height: 8),
 
-                    // Delivery List
                     Expanded(
                       child: filteredDeliveries.isEmpty
                           ? Center(
@@ -3945,7 +4289,7 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
 
                                 return Material(
                                   color: isSelected
-                                      ? const Color(0xFFFF6B24).withValues(alpha: 0.1)
+                                      ? const Color(0xFFF3E8FF)
                                       : const Color(0xFFF8FAFC),
                                   borderRadius: BorderRadius.circular(14),
                                   child: InkWell(
@@ -3957,7 +4301,7 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                                         borderRadius: BorderRadius.circular(14),
                                         border: Border.all(
                                           color: isSelected
-                                              ? const Color(0xFFFF6B24)
+                                              ? const Color(0xFF7C3AED)
                                               : const Color(0xFFE2E8F0),
                                           width: isSelected ? 1.5 : 1,
                                         ),
@@ -4037,15 +4381,14 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
               ),
             ),
 
-          // 4. Selected Rider Details Modal Card (Bottom Center)
           if (selectedDelivery != null)
             Positioned(
               bottom: 24,
-              left: _isDrawerOpen ? 400 : 24,
+              left: _isDrawerOpen ? 410 : 24,
               right: 100,
               child: Center(
                 child: Container(
-                  constraints: const BoxConstraints(maxWidth: 620),
+                  constraints: const BoxConstraints(maxWidth: 640),
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -4109,7 +4452,7 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                                 ],
                               ],
                             ),
-                            const SizedBox(height: 3),
+                            const SizedBox(height: 4),
                             Text(
                               '${selectedDelivery.storeName.isNotEmpty ? '${selectedDelivery.storeName} → ' : ''}${selectedDelivery.customer} · #${selectedDelivery.orderId.length > 8 ? selectedDelivery.orderId.substring(0, 8) : selectedDelivery.orderId}',
                               maxLines: 1,
@@ -4118,10 +4461,10 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'GPS: ${selectedDelivery.latitude.toStringAsFixed(4)}, ${selectedDelivery.longitude.toStringAsFixed(4)} · Updated ${DateFormat('h:mm:ss a').format(selectedDelivery.updatedAt)}',
+                              'GPS: ${selectedDelivery.latitude.toStringAsFixed(4)}, ${selectedDelivery.longitude.toStringAsFixed(4)} · Direction Active',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11, fontFamily: 'monospace', fontWeight: FontWeight.w500),
+                              style: const TextStyle(color: Color(0xFF059669), fontSize: 11, fontFamily: 'monospace', fontWeight: FontWeight.w700),
                             ),
                           ],
                         ),
@@ -4138,13 +4481,12 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
               ),
             ),
 
-          // 5. Floating Zoom & Orientation Controls (Bottom Right)
           Positioned(
             right: 20,
             bottom: 20,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.95),
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: const Color(0xFFE2E8F0)),
                 boxShadow: const [
@@ -4173,9 +4515,9 @@ class _LivePageState extends ConsumerState<LivePage> with SingleTickerProviderSt
                   ),
                   const Divider(height: 1, indent: 6, endIndent: 6, color: Color(0xFFE2E8F0)),
                   IconButton(
-                    tooltip: 'Center on Davao Operations Hub',
-                    icon: const Icon(Icons.my_location_rounded, color: Color(0xFFFF6B24)),
-                    onPressed: () => _mapController.move(const LatLng(7.0731, 125.6128), 13.0),
+                    tooltip: 'Center on Operations Hub',
+                    icon: const Icon(Icons.my_location_rounded, color: Color(0xFF7C3AED)),
+                    onPressed: () => _mapController.move(const LatLng(7.1086, 124.8235), 13.5),
                   ),
                 ],
               ),
@@ -4407,7 +4749,7 @@ class _Section extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF6B24).withValues(alpha: 0.12),
+                    color: const Color(0xFFF3E8FF),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -4415,7 +4757,7 @@ class _Section extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFFFF6B24),
+                      color: Color(0xFF7C3AED),
                     ),
                   ),
                 ),
@@ -4437,17 +4779,42 @@ class _Chip extends StatelessWidget {
   final String label;
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFF6B24).withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFFF6B24).withValues(alpha: 0.25)),
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: Color(0xFFFF6B24)),
-        ),
-      );
+  Widget build(BuildContext context) {
+    final lower = label.toLowerCase();
+    Color bg = const Color(0xFFF1F5F9);
+    Color text = const Color(0xFF475569);
+    Color border = const Color(0xFFE2E8F0);
+
+    if (lower.contains('way') || lower.contains('delivered') || lower.contains('active') || lower.contains('available')) {
+      bg = const Color(0xFFECFDF5);
+      text = const Color(0xFF059669);
+      border = const Color(0xFFA7F3D0);
+    } else if (lower.contains('pick') || lower.contains('confirm') || lower.contains('assign')) {
+      bg = const Color(0xFFF3E8FF);
+      text = const Color(0xFF7C3AED);
+      border = const Color(0xFFDDD6FE);
+    } else if (lower.contains('pend')) {
+      bg = const Color(0xFFFEF3C7);
+      text = const Color(0xFFB45309);
+      border = const Color(0xFFFDE68A);
+    } else if (lower.contains('cancel')) {
+      bg = const Color(0xFFFEE2E2);
+      text = const Color(0xFFDC2626);
+      border = const Color(0xFFFECACA);
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: border),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: text),
+      ),
+    );
+  }
 }
 

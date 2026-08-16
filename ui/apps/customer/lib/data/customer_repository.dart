@@ -28,7 +28,7 @@ abstract interface class CustomerRepository {
 }
 
 class DemoCustomerRepository implements CustomerRepository {
-  final List<DeliveryAddress> _addresses = [const DeliveryAddress(id: 'home', label: 'Home', address: 'Poblacion, Kabacan', latitude: 7.1066, longitude: 124.8292)];
+  final List<DeliveryAddress> _addresses = [const DeliveryAddress(id: 'home', label: 'Home', address: 'Central District', latitude: 7.1066, longitude: 124.8292)];
   @override
   String? get realtimeToken => null;
 
@@ -114,7 +114,7 @@ class DemoCustomerRepository implements CustomerRepository {
         id: 'MNS-24017',
         store: const Store(id: 'store-1', name: 'M&S Kitchen', subtitle: '', categories: [], rating: 4.8, etaMinutes: 28),
         lines: const [],
-        address: const DeliveryAddress(id: 'home', label: 'Home', address: 'Poblacion, Kabacan', latitude: 7.1066, longitude: 124.8292),
+        address: const DeliveryAddress(id: 'home', label: 'Home', address: 'Central District', latitude: 7.1066, longitude: 124.8292),
         stage: OrderStage.delivered,
         createdAt: DateTime.now().subtract(const Duration(days: 3)),
         deliveryFee: 49,

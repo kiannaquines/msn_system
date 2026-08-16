@@ -61,6 +61,12 @@ class SessionController extends StateNotifier<SessionState> {
     }
   }
 
+  void clearError() {
+    if (state.error != null) {
+      state = SessionState(profile: state.profile);
+    }
+  }
+
   Future<void> logout() async {
     await _repository.logout();
     state = const SessionState();
@@ -71,7 +77,11 @@ final sessionProvider = StateNotifierProvider<SessionController, SessionState>((
   return SessionController(ref.watch(customerRepositoryProvider));
 });
 
-final storesProvider = FutureProvider<List<Store>>((ref) => ref.watch(customerRepositoryProvider).stores());
+final storesProvider = FutureProvider<List<Store>>((ref) async {
+  final session = ref.watch(sessionProvider);
+  if (!session.authenticated) return [];
+  return ref.watch(customerRepositoryProvider).stores();
+});
 final menuProvider = FutureProvider.family<List<MenuItem>, String>((ref, id) => ref.watch(customerRepositoryProvider).menu(id));
 class AddressesController extends StateNotifier<AsyncValue<List<DeliveryAddress>>> {
   AddressesController(this._repository) : super(const AsyncValue.loading()) {

@@ -90,10 +90,10 @@ class _BrowseTabState extends ConsumerState<_BrowseTab> {
     final stores = ref.watch(storesProvider);
     final profile = ref.watch(sessionProvider).profile;
     final cartCount = ref.watch(cartProvider).count;
-    final addressesAsync = ref.watch(addressesProvider);
-    final addressText = addressesAsync.maybeWhen(
-      data: (list) => list.isNotEmpty ? '${list.first.label} · ${list.first.address}' : 'Home · Poblacion, Kabacan',
-      orElse: () => 'Home · Poblacion, Kabacan',
+    final addresses = ref.watch(addressesProvider);
+    final addressText = addresses.maybeWhen(
+      data: (list) => list.isNotEmpty ? list.first.address : 'Select delivery location',
+      orElse: () => 'Select delivery location',
     );
 
     return RefreshIndicator(
@@ -162,7 +162,7 @@ class _BrowseTabState extends ConsumerState<_BrowseTab> {
                       Badge(
                         label: Text('$cartCount'),
                         isLabelVisible: cartCount > 0,
-                        backgroundColor: const Color(0xFFFF5216),
+                        backgroundColor: const Color(0xFF7C3AED),
                         child: Container(
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
@@ -317,7 +317,7 @@ class _BrowseTabState extends ConsumerState<_BrowseTab> {
                               ),
                               const SizedBox(height: 8),
                               const Text(
-                                'Fresh & Hot Delivery in Kabacan',
+                                'Fresh & Hot On-Demand Delivery',
                                 style: TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.3),
                               ),
                               const SizedBox(height: 4),
@@ -355,7 +355,7 @@ class _BrowseTabState extends ConsumerState<_BrowseTab> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _selectedCategory == 'All' ? 'Kabacan Hub' : _selectedCategory,
+                        _selectedCategory == 'All' ? 'All Stores' : _selectedCategory,
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF9D65E5)),
                       ),
                     ],
@@ -442,7 +442,7 @@ String _getStorePhotoUrl(String name) {
 List<Color> _getStoreGradient(String name) {
   final lower = name.toLowerCase();
   if (lower.contains('penong') || lower.contains('inasal')) {
-    return [const Color(0xFFE11D48), const Color(0xFFFF6B24), const Color(0xFFFBBF24)];
+    return [const Color(0xFF7C3AED), const Color(0xFF9D65E5), const Color(0xFFC084FC)];
   }
   if (lower.contains('pastil') || lower.contains('native')) {
     return [const Color(0xFF047857), const Color(0xFF10B981), const Color(0xFF6EE7B7)];
@@ -620,7 +620,7 @@ class _StoreCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    store.subtitle.isNotEmpty ? store.subtitle : 'Authentic Filipino cuisine in Kabacan',
+                    store.subtitle.isNotEmpty ? store.subtitle : 'Authentic dishes & fast delivery',
                     style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.3),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -713,10 +713,10 @@ class _OrdersTab extends ConsumerWidget {
                     contentPadding: const EdgeInsets.all(16),
                     leading: CircleAvatar(
                       radius: 22,
-                      backgroundColor: order.stage.isComplete ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFFFF6B24).withValues(alpha: 0.15),
+                      backgroundColor: order.stage.isComplete ? const Color(0xFF10B981).withValues(alpha: 0.15) : const Color(0xFF7C3AED).withValues(alpha: 0.15),
                       child: Icon(
                         order.stage.isComplete ? Icons.check_circle_rounded : Icons.delivery_dining_rounded,
-                        color: order.stage.isComplete ? const Color(0xFF10B981) : const Color(0xFFFF6B24),
+                        color: order.stage.isComplete ? const Color(0xFF10B981) : const Color(0xFF7C3AED),
                       ),
                     ),
                     title: Row(
@@ -743,7 +743,7 @@ class _OrdersTab extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: order.stage.isComplete ? const Color(0xFFECFDF5) : const Color(0xFFFFF7ED),
+                              color: order.stage.isComplete ? const Color(0xFFECFDF5) : const Color(0xFFF3E8FF),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
@@ -751,7 +751,7 @@ class _OrdersTab extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
-                                color: order.stage.isComplete ? const Color(0xFF065F46) : const Color(0xFFC2410C),
+                                color: order.stage.isComplete ? const Color(0xFF065F46) : const Color(0xFF7C3AED),
                               ),
                             ),
                           ),
@@ -790,10 +790,10 @@ class _EmptyOrders extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFF6B24).withValues(alpha: 0.1),
+                color: const Color(0xFFF3E8FF),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.receipt_long_outlined, size: 48, color: Color(0xFFFF6B24)),
+              child: const Icon(Icons.receipt_long_outlined, size: 48, color: Color(0xFF7C3AED)),
             ),
             const SizedBox(height: 16),
             const Text('No orders yet', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF0F172A))),
@@ -829,7 +829,7 @@ class _ProfileTab extends ConsumerWidget {
             children: [
               CircleAvatar(
                 radius: 28,
-                backgroundColor: const Color(0xFFFF6B24),
+                backgroundColor: const Color(0xFF7C3AED),
                 child: Text(
                   profile?.name.isNotEmpty == true ? profile!.name.substring(0, 1).toUpperCase() : 'C',
                   style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: Colors.white),
@@ -866,7 +866,7 @@ class _ProfileTab extends ConsumerWidget {
                 ListTile(
                   leading: const Icon(Icons.location_on_outlined, color: Color(0xFF0F172A)),
                   title: const Text('Saved addresses', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                  subtitle: const Text('Manage your delivery locations in Kabacan', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                  subtitle: const Text('Manage your saved delivery locations', style: TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                   trailing: const Icon(Icons.chevron_right, color: Color(0xFF94A3B8)),
                   onTap: () => context.push('/addresses'),
                 ),

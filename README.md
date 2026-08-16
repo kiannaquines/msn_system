@@ -1,6 +1,6 @@
-# M&S Delivery System
+# M&S Delivery
 
-Contract-first delivery platform for M&S Delivery Express Kabacan.
+Contract-first universal delivery platform for M&S Delivery Express.
 
 ## Components
 

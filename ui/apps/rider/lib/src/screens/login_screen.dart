@@ -12,8 +12,8 @@ class RiderLoginScreen extends ConsumerStatefulWidget {
 class _RiderLoginScreenState extends ConsumerState<RiderLoginScreen>
     with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: 'rider@mns.com');
-  final _passwordController = TextEditingController(text: 'Password123!');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
   late final AnimationController _anim;
@@ -46,12 +46,6 @@ class _RiderLoginScreenState extends ConsumerState<RiderLoginScreen>
         );
   }
 
-  void _fillDemo(String email) {
-    setState(() {
-      _emailController.text = email;
-      _passwordController.text = 'Password123!';
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -276,42 +270,6 @@ class _RiderLoginScreenState extends ConsumerState<RiderLoginScreen>
                             ),
                           ),
 
-                          const SizedBox(height: 24),
-
-                          // Quick demo switcher
-                          Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: const Color(0xFFE5DEEE)),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Row(
-                                  children: [
-                                    Icon(Icons.speed_rounded, size: 15, color: Color(0xFFFF6B24)),
-                                    SizedBox(width: 6),
-                                    Text(
-                                      'Quick Demo — Davao Toril Riders',
-                                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 12, color: Color(0xFF0F172A)),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: [
-                                    _DemoChip(name: 'Arnel', email: 'rider@mns.com', isSelected: _emailController.text == 'rider@mns.com', onTap: () => _fillDemo('rider@mns.com')),
-                                    _DemoChip(name: 'Ben', email: 'rider.ben@mns.com', isSelected: _emailController.text == 'rider.ben@mns.com', onTap: () => _fillDemo('rider.ben@mns.com')),
-                                    _DemoChip(name: 'Carlo', email: 'rider.carlo@mns.com', isSelected: _emailController.text == 'rider.carlo@mns.com', onTap: () => _fillDemo('rider.carlo@mns.com')),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -326,45 +284,3 @@ class _RiderLoginScreenState extends ConsumerState<RiderLoginScreen>
   }
 }
 
-class _DemoChip extends StatelessWidget {
-  const _DemoChip({
-    required this.name,
-    required this.email,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  final String name;
-  final String email;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF7C3AED) : Colors.white,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? const Color(0xFF7C3AED) : const Color(0xFFE5DEEE),
-          ),
-          boxShadow: isSelected
-              ? [BoxShadow(color: const Color(0xFF7C3AED).withValues(alpha: 0.25), blurRadius: 6, offset: const Offset(0, 2))]
-              : null,
-        ),
-        child: Text(
-          name,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: isSelected ? Colors.white : const Color(0xFF475569),
-          ),
-        ),
-      ),
-    );
-  }
-}

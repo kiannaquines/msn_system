@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mns_design_system/design_system.dart';
 
 import '../data/reverse_geocoder.dart';
 import '../state/customer_state.dart';
@@ -83,13 +84,11 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
       setState(() {
         _addressController.text = resolvedAddress;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('📍 Address captured: $resolvedAddress'),
-          backgroundColor: const Color(0xFF059669),
-          duration: const Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
+      MnsSnackBar.show(
+        context,
+        title: 'Location Captured',
+        message: resolvedAddress,
+        type: MnsSnackBarType.success,
       );
     }
 
@@ -114,19 +113,21 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
       ref.invalidate(addressesProvider);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Address "$label" added successfully!'),
-            backgroundColor: const Color(0xFF059669),
-            behavior: SnackBarBehavior.floating,
-          ),
+        MnsSnackBar.show(
+          context,
+          title: 'Address Saved',
+          message: 'Address "$label" added successfully.',
+          type: MnsSnackBarType.success,
         );
         context.pop(true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not save address: $e'), backgroundColor: const Color(0xFFDC2626)),
+        MnsSnackBar.show(
+          context,
+          title: 'Unable to Save Address',
+          message: e.toString().replaceFirst('Exception: ', ''),
+          type: MnsSnackBarType.error,
         );
       }
     } finally {
@@ -174,7 +175,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Kabacan Delivery Zone',
+                          'Delivery Address Pin',
                           style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 16),
                         ),
                         SizedBox(height: 3),
@@ -254,7 +255,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
               controller: _addressController,
               maxLines: 3,
               decoration: InputDecoration(
-                hintText: 'House/Building number, Street, Barangay (e.g. Sunset St, USM Exit Gate, Poblacion, Kabacan)',
+                hintText: 'House/Building number, Street, Barangay (e.g. 123 Main St, Central District)',
                 prefixIcon: const Padding(
                   padding: EdgeInsets.only(bottom: 40),
                   child: Icon(Icons.pin_drop_outlined, color: Color(0xFF64748B)),
@@ -264,7 +265,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
               ),
-              validator: (val) => val == null || val.trim().length < 5 ? 'Please enter a complete address in Kabacan' : null,
+              validator: (val) => val == null || val.trim().length < 5 ? 'Please enter a complete delivery address' : null,
             ),
             const SizedBox(height: 18),
 
@@ -311,7 +312,7 @@ class _AddAddressScreenState extends ConsumerState<AddAddressScreen> {
                             const SizedBox(height: 2),
                             Text(
                               _position != null
-                                  ? '${_position!.latitude.toStringAsFixed(4)}, ${_position!.longitude.toStringAsFixed(4)} (Kabacan)'
+                                  ? '${_position!.latitude.toStringAsFixed(4)}, ${_position!.longitude.toStringAsFixed(4)} (Verified GPS)'
                                   : 'Tap locate to pinpoint your delivery coordinate',
                               style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                             ),
