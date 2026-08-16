@@ -162,21 +162,30 @@ def delivery_response(db: Session, order: Order) -> DeliveryResponse:
     customer = db.get(User, order.customer_id)
     address = db.get(Address, order.address_id)
     location = db.scalar(select(LocationPoint).where(LocationPoint.order_id == order.id).order_by(LocationPoint.captured_at.desc()).limit(1))
-    origin = (location.latitude, location.longitude) if location else (store.latitude, store.longitude)
-    eta_minutes = route_metrics(origin, (address.latitude, address.longitude))[1] if order.status in ACTIVE_STATUSES else None
+    # Guard: skip ETA calculation if coordinates are unavailable
+    if location:
+        origin = (location.latitude, location.longitude)
+    elif store and store.latitude is not None:
+        origin = (store.latitude, store.longitude)
+    else:
+        origin = None
+    has_dest = address and address.latitude is not None and address.longitude is not None
+    eta_minutes = route_metrics(origin, (address.latitude, address.longitude))[1] if (
+        order.status in ACTIVE_STATUSES and origin and has_dest
+    ) else None
     return DeliveryResponse(
         id=order.id,
         order_id=order.id,
         status=order.status,
         rider_id=order.rider_id,
-        store_name=store.name,
-        customer_name=customer.full_name,
+        store_name=store.name if store else "Unknown Store",
+        customer_name=customer.full_name if customer else "Unknown Customer",
         rider_name=db.get(User, order.rider_id).full_name if order.rider_id else None,
-        delivery_address=address.line1,
-        pickup_latitude=store.latitude,
-        pickup_longitude=store.longitude,
-        destination_latitude=address.latitude,
-        destination_longitude=address.longitude,
+        delivery_address=address.line1 if address else "Unknown Address",
+        pickup_latitude=store.latitude if store else None,
+        pickup_longitude=store.longitude if store else None,
+        destination_latitude=address.latitude if address else None,
+        destination_longitude=address.longitude if address else None,
         total=order.total,
         payment_status=order.payment_status,
         latitude=location.latitude if location else None,
@@ -193,7 +202,13 @@ def list_deliveries(user: User = Depends(current_user), db: Session = Depends(ge
         query = query.where(Order.customer_id == user.id)
     elif user.role == "rider":
         query = query.where(Order.rider_id == user.id)
-    return [delivery_response(db, order) for order in db.scalars(query.order_by(Order.updated_at.desc())).all()]
+    results = []
+    for order in db.scalars(query.order_by(Order.updated_at.desc())).all():
+        try:
+            results.append(delivery_response(db, order))
+        except Exception:
+            pass  # Skip orders with corrupt/missing FK data
+    return results
 
 
 @router.get("/deliveries/{order_id}", response_model=DeliveryResponse)
